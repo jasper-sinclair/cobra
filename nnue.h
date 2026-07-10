@@ -4,7 +4,7 @@ struct board;
 
 namespace nnue{
   constexpr int input_size = 768;
-  constexpr int l1_size = 256;
+  constexpr int l1_size = 128;
 
   bool init();
 
