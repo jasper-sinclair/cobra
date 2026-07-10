@@ -1,10 +1,24 @@
 ﻿#include "bitboard.h"
 #include <algorithm>
+// ReSharper disable once CppUnusedIncludeDirective
 #include <cstring>
+#include <iostream>
 #include <sstream>
 #include <string>
 #include "attack.h"
 #include "eval.h"
+#include "nnue.h"
+
+namespace{
+  std::string piece_to_char = " PNBRQK  pnbrqk";
+}
+
+namespace zobrist{
+  u64 psq[16][n_sqs];
+  u64 side;
+  u64 castle[16];
+  u64 en_passant[n_files];
+}
 
 board::board(
   const std::string& fen){
@@ -12,15 +26,16 @@ board::board(
   board_status.clear();
   board_status.emplace_back();
   st = get_board_status();
+
   std::istringstream ss(fen);
   std::string token;
   ss >> token;
   u8 sq = a8;
-  i32 pc;
   for (const char c : token){
     if (c == ' ') continue;
-    if ((pc = SCI32(piece_to_char.find(c))) != SCI(std::string::npos)){
-      set_piece<false>(pc,sq);
+    if (const auto p = piece_to_char.find(c);
+      p != std::string::npos){
+      set_piece<false>(static_cast<i32>(p),sq);
       sq += east;
     } else if (isdigit(c)){
       sq += (c - '0') * east;
@@ -49,7 +64,8 @@ board::board(
   ss >> st->fifty_move_count;
   ss >> st->ply_count;
   st->ply_count = 2 * (st->ply_count - 1) + side_to_move;
-  st->zobrist = 42;
+  st->zobrist = compute_full_zobrist();
+  nnue::refresh_accumulator(*this,st->acc);
 }
 
 board::board(
@@ -60,9 +76,9 @@ board::board(
 board& board::operator=(
   const board& other){
   if (this == &other) return *this;
-  std::memcpy(pos,other.pos,n_sqs * sizeof(i32));
-  std::memcpy(piece_bb,other.piece_bb,n_piece_types * sizeof(bitboard));
-  std::memcpy(color_bb,other.color_bb,n_colors * sizeof(bitboard));
+  std::ranges::copy(other.pos,std::begin(pos));
+  std::ranges::copy(other.piece_bb,std::begin(piece_bb));
+  std::ranges::copy(other.color_bb,std::begin(color_bb));
   occupied_bb = other.occupied_bb;
   side_to_move = other.side_to_move;
   board_status = other.board_status;
@@ -143,17 +159,42 @@ template <bool UpdateZobrist> void board::move_piece(
   remove_piece<UpdateZobrist>(from);
 }
 
+u64 board::compute_full_zobrist() const{
+  u64 h = 0;
+
+  for (u8 sq = 0; sq < n_sqs; ++sq){
+    if (const i32 pc = piece_on(sq))
+      h ^= zobrist::psq[pc][sq];
+  }
+
+  h ^= zobrist::castle[st->castles.data];
+
+  if (st->ep_sq != no_sq)
+    h ^= zobrist::en_passant[fmake(st->ep_sq)];
+
+  if (side_to_move)
+    h ^= zobrist::side;
+
+  return h;
+}
+
 void board::apply_move(
   const u16 m){
   const u8 from = move::from(m);
   const u8 to = move::to(m);
   const move::move_type mt = move::mt(m);
+
   i32 pc = piece_on(from);
+  const i32 original_pc = pc;
   const i32 pt = ptmake(pc);
+
   const bool us = side_to_move;
   const bool them = ! us;
   const i32 push = pawn_push(us);
+
   board_state bs;
+  std::memcpy(bs.acc,st->acc,sizeof(bs.acc));
+
   bs.ply_count = st->ply_count + 1;
   bs.fifty_move_count = st->fifty_move_count + 1;
   bs.castles = st->castles;
@@ -163,14 +204,19 @@ void board::apply_move(
     mt == move::en_passant?pmake(them,pawn):piece_on(to);
   bs.move = m;
   bs.king_attacinfo.computed = false;
-  if (st->ep_sq){
+
+  if (st->ep_sq)
     st->zobrist ^= zobrist::en_passant[fmake(st->ep_sq)];
-  }
+
   if (bs.captured){
     bs.fifty_move_count = 0;
+
     u8 capsq = to;
-    if (mt == move::en_passant) capsq -= SCU8(push);
+    if (mt == move::en_passant)
+      capsq -= SCU8(push);
+
     remove_piece(capsq);
+
     if (bs.captured == pmake(them,rook)){
       if (to == relative(us,a8)){
         st->zobrist ^= zobrist::castle[bs.castles.data];
@@ -183,8 +229,10 @@ void board::apply_move(
       }
     }
   }
+
   if (pt == pawn){
     bs.fifty_move_count = 0;
+
     if (to - from == 2 * push){
       bs.ep_sq = SCU8(to - push);
       st->zobrist ^= zobrist::en_passant[fmake(bs.ep_sq)];
@@ -193,6 +241,7 @@ void board::apply_move(
     st->zobrist ^= zobrist::castle[bs.castles.data];
     bs.castles.reset(us?black_castle:white_castle);
     st->zobrist ^= zobrist::castle[bs.castles.data];
+
     if (mt == move::castle){
       if (to == relative(us,c1)){
         const u8 rfrom = relative(us,a1);
@@ -215,6 +264,7 @@ void board::apply_move(
       st->zobrist ^= zobrist::castle[bs.castles.data];
     }
   }
+
   if (mt == move::promotion){
     remove_piece(from);
     pc = pmake(us,move::get_piece_type(m));
@@ -222,17 +272,56 @@ void board::apply_move(
   } else{
     move_piece(from,to);
   }
+
   st->zobrist ^= zobrist::side;
   side_to_move = ! side_to_move;
+
+  nnue::sub_feature(bs.acc,original_pc,from);
+
+  if (bs.captured){
+    u8 capsq = to;
+    if (mt == move::en_passant)
+      capsq -= SCU8(push);
+
+    nnue::sub_feature(bs.acc,bs.captured,capsq);
+  }
+
+  if (mt == move::promotion){
+    const i32 promo_pc = pmake(us,move::get_piece_type(m));
+    nnue::add_feature(bs.acc,promo_pc,to);
+  } else{
+    nnue::add_feature(bs.acc,original_pc,to);
+  }
+
+  if (pt == king && mt == move::castle){
+    const i32 rook_pc = pmake(us,rook);
+
+    if (to == relative(us,c1)){
+      const u8 rfrom = relative(us,a1);
+      const u8 rto = relative(us,d1);
+      nnue::sub_feature(bs.acc,rook_pc,rfrom);
+      nnue::add_feature(bs.acc,rook_pc,rto);
+    } else if (to == relative(us,g1)){
+      const u8 rfrom = relative(us,h1);
+      const u8 rto = relative(us,f1);
+      nnue::sub_feature(bs.acc,rook_pc,rfrom);
+      nnue::add_feature(bs.acc,rook_pc,rto);
+    }
+  }
+
   bs.repetitions = 0;
+
   for (int i = SCI(board_status.size()) - 4;
-       i > SCI(board_status.size()) - bs.fifty_move_count - 1; i -= 2){
+       i > SCI(board_status.size()) - bs.fifty_move_count - 1;
+       i -= 2){
     if (i <= 0) break;
+
     if (board_status[i].zobrist == st->zobrist){
       bs.repetitions = board_status[i].repetitions + 1;
       break;
     }
   }
+
   std::swap(st->zobrist,bs.zobrist);
   board_status.push_back(bs);
   st = get_board_status();
@@ -265,16 +354,26 @@ void board::undo_move(){
 
 void board::apply_null_move(){
   board_state bs;
+
+  bs.zobrist = st->zobrist;
   bs.ply_count = st->ply_count;
   bs.fifty_move_count = st->fifty_move_count;
   bs.castles = st->castles;
   bs.repetitions = 0;
-  bs.ep_sq = no_sq;
   bs.captured = no_piece;
   bs.move = 0;
   bs.king_attacinfo.computed = false;
+
+  if (st->ep_sq != no_sq)
+    bs.zobrist ^= zobrist::en_passant[fmake(st->ep_sq)];
+
+  bs.ep_sq = no_sq;
+
+  bs.zobrist ^= zobrist::side;
+
   board_status.push_back(bs);
   st = get_board_status();
+
   side_to_move = ! side_to_move;
 }
 

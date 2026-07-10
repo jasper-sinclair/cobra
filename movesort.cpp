@@ -1,5 +1,6 @@
 #include "movesort.h"
 #include <algorithm>
+#include <cstring>
 #include "bitboard.h"
 #include "eval.h"
 #include "search.h"
@@ -55,9 +56,9 @@ void move_sort::compute_scores(){
     threatened_by_minor | position.atts_by<rook>(them);
   const bitboard threatened_pieces =
     position.get_color(us) &
-    ((threatened_by_pawn & (position.get_pieces(knight) | position.get_pieces(bishop))) |
-      (threatened_by_minor & position.get_pieces(rook)) |
-      (threatened_by_rook & position.get_pieces(queen)));
+    (threatened_by_pawn & (position.get_pieces(knight) | position.get_pieces(bishop)) |
+      threatened_by_minor & position.get_pieces(rook) |
+      threatened_by_rook & position.get_pieces(queen));
   for (auto& [move, score] : moves){
     const u16 m = move;
     int s = 0;

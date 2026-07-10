@@ -1,10 +1,10 @@
 #include "attack.h"
-#include "eval.h"
+#include "nnue.h"
 #include "uci.h"
 
 int main(){
   attack::init();
-  eval::init();
+  nnue::init();
   search::init();
   zobrist::init();
   uci::init();

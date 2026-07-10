@@ -57,7 +57,7 @@ namespace attack{
   inline bitboard file_att(
     const u8 sq,
     bitboard occ){
-    occ = filea & (occ >> fmake(sq));
+    occ = filea & occ >> fmake(sq);
     occ = occ * diag_c2_h7 >> 58;
     return a_file_att[rmake(sq)][occ.data] << fmake(sq);
   }

@@ -3,8 +3,12 @@
 #include <chrono>
 #include <string>
 #include <vector>
-#include <ostream>
 #include "main.h"
+#include "nnue.h"
+#ifdef _MSC_VER
+#pragma warning(disable : 4324) //'board_state': structure was padded due to alignment specifier
+#else
+#endif
 
 struct bitboard{
   u64 data;
@@ -44,31 +48,31 @@ struct bitboard{
   constexpr friend bitboard operator&(
     const bitboard a,
     const bitboard b){
-    return a.data & b.data;
+    return bitboard{a.data & b.data};
   }
 
   constexpr friend bitboard operator|(
     const bitboard a,
     const bitboard b){
-    return a.data | b.data;
+    return bitboard{a.data | b.data};
   }
 
   constexpr friend bitboard operator^(
     const bitboard a,
     const bitboard b){
-    return a.data ^ b.data;
+    return bitboard{a.data ^ b.data};
   }
 
   constexpr friend bitboard operator-(
     const bitboard a,
     const bitboard b){
-    return a.data & ~b.data;
+    return bitboard{a.data & ~b.data};
   }
 
   constexpr friend bitboard operator*(
     const bitboard a,
     const bitboard b){
-    return a.data * b.data;
+    return bitboard{a.data * b.data};
   }
 
   constexpr void operator&=(
@@ -92,7 +96,7 @@ struct bitboard{
   }
 
   constexpr bitboard operator~() const{
-    return ~data;
+    return bitboard{~data};
   }
 
   constexpr explicit operator bool() const{
@@ -102,13 +106,13 @@ struct bitboard{
   constexpr friend bitboard operator<<(
     const bitboard b,
     const u8 shift){
-    return b.data << shift;
+    return bitboard{b.data << shift};
   }
 
   constexpr friend bitboard operator>>(
     const bitboard b,
     const u8 shift){
-    return b.data >> shift;
+    return bitboard{b.data >> shift};
   }
 
   constexpr bool operator==(
@@ -212,14 +216,23 @@ namespace move{
 
   inline std::string move_to_string(
     const u16 m){
-    std::string s = sq_to_string(from(m)) + sq_to_string(to(m));
+    std::string s;
+    s.reserve(5);
+
+    s += sq_to_string(from(m));
+    s += sq_to_string(to(m));
+
     if (mt(m) == promotion){
       switch (get_piece_type(m)){
-      case knight: return s + 'n';
-      case bishop: return s + 'b';
-      case rook: return s + 'r';
-      case queen: return s + 'q';
-      default: ;
+      case knight: s += 'n';
+        break;
+      case bishop: s += 'b';
+        break;
+      case rook: s += 'r';
+        break;
+      case queen: s += 'q';
+        break;
+      default: break;
       }
     }
     return s;
@@ -270,6 +283,7 @@ struct board_state{
   u16 move = 0;
   i32 captured = 0;
   u8 ep_sq = 0;
+  alignas(32) i16 acc[2][nnue::l1_size];
 };
 
 struct board{
@@ -339,6 +353,8 @@ struct board{
   template <i32 Pt> bitboard atts_by(
     bool c);
 
+  [[nodiscard]] u64 compute_full_zobrist() const;
+
   void apply_move(
     u16 m);
 
@@ -380,6 +396,8 @@ struct board{
 
   [[nodiscard]] bool is_capture(
     u16 m) const;
+
+  [[nodiscard]] bool is_insufficient_material() const;
 
   [[nodiscard]] bool is_draw() const;
 
@@ -454,7 +472,16 @@ inline u64 board::key() const{
 }
 
 inline bool board::is_draw() const{
-  return st->repetitions >= 2;
+  if (st->repetitions >= 2)
+    return true;
+
+  if (st->fifty_move_count >= 100)
+    return true;
+
+  if (is_insufficient_material())
+    return true;
+
+  return false;
 }
 
 inline bool board::is_capture(
@@ -471,7 +498,7 @@ inline bitboard board::non_pawn_material(
   const bool c) const{
   return get_color(c) - get_pieces(pawn) - get_pieces(king);
 }
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 constexpr int popcnt(
   const bitboard b){
   return std::popcount(b.data);
@@ -489,7 +516,7 @@ inline void mirror(
 
 inline bitboard mirrored(
   const bitboard b){
-  return {_byteswap_uint64(b.data)};
+  return bitboard{_byteswap_uint64(b.data)};
 }
 #else
 inline void mirror(
@@ -525,6 +552,33 @@ inline u8 pop_lsb(
 inline u8 board::ksq(
   const bool c) const{
   return lsb(get_pieces(c,king));
+}
+
+inline bool board::is_insufficient_material() const{
+  if (get_pieces(pawn))
+    return false;
+
+  if (get_pieces(queen) || get_pieces(rook))
+    return false;
+
+  const int white_minors =
+    popcnt(get_pieces(white,bishop)) +
+    popcnt(get_pieces(white,knight));
+
+  const int black_minors =
+    popcnt(get_pieces(black,bishop)) +
+    popcnt(get_pieces(black,knight));
+
+  if (white_minors == 0 && black_minors == 0)
+    return true;
+
+  if (white_minors <= 1 && black_minors == 0)
+    return true;
+
+  if (black_minors <= 1 && white_minors == 0)
+    return true;
+
+  return false;
 }
 
 extern template bitboard board::atts_by<pawn>(

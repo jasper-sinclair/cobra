@@ -1,0 +1,65 @@
+# ============================================
+#   cobra MinGW Static Build
+# ============================================
+
+ifeq ($(OS),Windows_NT)
+    EXE := cobra_mingw.exe
+else
+    EXE := cobra_mingw
+endif
+
+# ---- Source files ----
+SRC  := $(wildcard *.cpp)
+OBJS := $(SRC:.cpp=.o)
+DEPS := $(OBJS:.o=.d)
+
+# ---- Compiler ----
+CXX := g++
+
+# ---- Build Options ----
+debug    := no
+optimize := yes
+haswell  := yes
+
+# ---- Compiler Flags ----
+CXXFLAGS := -std=c++20 -static
+
+ifeq ($(debug),no)
+    CXXFLAGS += -DNDEBUG
+else
+    CXXFLAGS += -g
+endif
+
+ifeq ($(optimize),yes)
+    CXXFLAGS += -O3 -flto=auto
+endif
+
+ifeq ($(haswell),yes)
+    CXXFLAGS += -march=haswell
+endif
+
+# ---- Linker Flags ----
+LDFLAGS := -s -flto
+
+# ============================================
+
+all: $(EXE)
+
+$(EXE): $(OBJS)
+	$(CXX) $(OBJS) -o $@ $(CXXFLAGS) $(LDFLAGS)
+
+# ---- Compile cpp ----
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -MMD -MP -c $< -o $@
+
+# ---- Clean ----
+clean:
+	rm -f *.o *.d $(EXE)
+
+# ---- Clean objects ----
+clean-obj:
+	rm -f *.o *.d
+
+-include $(DEPS)
+
+.PHONY: all clean clean-obj

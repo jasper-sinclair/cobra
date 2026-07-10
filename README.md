@@ -1,2 +1,2 @@
-# bbce
+# cobra
 uci chess engine

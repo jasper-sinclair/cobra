@@ -2,10 +2,7 @@
 #include <algorithm>
 #include "main.h"
 #include "uci.h"
-#ifdef _MSC_VER
-#pragma warning(disable : 4244)
-#else
-#endif
+
 chrono::chrono(){
   std::memset(this,0,sizeof(chrono));
 }

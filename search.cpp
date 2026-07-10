@@ -3,8 +3,15 @@
 #include <sstream>
 #include "eval.h"
 #include "hash.h"
+#include "nnue.h"
+#include "uci.h"
 
-template <bool MainThread> u16 search::best_move(
+i32 search::forward_pruning_table[max_depth][max_moves];
+i32 search::log_reduction_table[max_depth][max_moves];
+i32 search::move_count_pruning_table[max_depth];
+
+template <bool MainThread>
+u16 search::best_move(
   board& pos,
   const thread_id id){
   if (MainThread){
@@ -13,60 +20,135 @@ template <bool MainThread> u16 search::best_move(
       td->node_count = 0;
       td->root_depth = 1;
     }
-    for (thread_id i = 1; i < num_threads; ++i) threads.emplace_back(&search::best_move<false>,this,std::ref(pos),i);
+
+    for (thread_id i = 1; i < num_threads; ++i)
+      threads.emplace_back(&search::best_move<false>,this,std::ref(pos),i);
   }
+
   thread_data& td = *thread_info[id];
   board copy(pos);
+
   int alpha;
   int beta;
   int score = 0;
-  int prev_score = 0;
+
   for (int i = 0; i < max_ply + continuation_ply; ++i){
     td.stack[i].ply = i - continuation_ply;
     td.stack[i].moved = no_piece;
     td.stack[i].pv_size = 0;
     td.stack[i].move = u16();
   }
+
   search_stack* ss = &td.stack[continuation_ply];
   *ss = search_stack();
-  while (td.root_depth < max_depth){
-    if (MainThread && time.use_depth_limit && td.root_depth > time.depth_limit) break;
-    int delta = 17;
-    if (td.root_depth == 1){
-      alpha = -infinite_score;
-      beta = infinite_score;
-    } else{
-      alpha = SCI(std::max(score - delta,-infinite_score));
-      beta = SCI(std::min(score + delta,+infinite_score));
-    }
-    for (;;){
-      score = alpha_beta<root>(copy,alpha,beta,td.root_depth,td,ss);
-      if (time.stop) break;
-      if (score <= alpha){
-        beta = (alpha + beta) / 2;
-        alpha = SCI(std::max(alpha - delta,-infinite_score));
-      } else if (score >= beta) beta = SCI(std::min(beta + delta,+infinite_score));
-      else break;
-      delta += delta / 3;
-    }
-    if (time.stop) break;
-    prev_score = score;
+
+  if (selfplay_mode && time.use_depth_limit){
+    alpha = -infinite_score;
+    beta = infinite_score;
+
+    score = alpha_beta<root>(
+      copy,
+      alpha,
+      beta,
+      time.depth_limit,
+      td,
+      ss
+    );
+
     td.pv.clear();
-    for (int i = 0; i < ss->pv_size; ++i) td.pv.push_back(ss->pv[i]);
-    if (MainThread){
-      SO << info(td,td.root_depth,score) << SE;
+    for (int i = 0; i < ss->pv_size; ++i)
+      td.pv.push_back(ss->pv[i]);
+  } else{
+    while (td.root_depth < max_depth){
+      if (time.use_depth_limit &&
+        td.root_depth > time.depth_limit)
+        break;
+
+      int delta = 17;
+
+      if (td.root_depth == 1){
+        alpha = -infinite_score;
+        beta = infinite_score;
+      } else{
+        alpha = SCI(std::max(score - delta,-infinite_score));
+        beta = SCI(std::min(score + delta,
+          static_cast<int>(infinite_score)));
+      }
+
+      for (;;){
+        score = alpha_beta<root>(
+          copy,
+          alpha,
+          beta,
+          td.root_depth,
+          td,
+          ss
+        );
+
+        if (time.stop)
+          break;
+
+        if (score <= alpha){
+          beta = (alpha + beta) / 2;
+          alpha = SCI(std::max(alpha - delta,-infinite_score));
+        } else if (score >= beta){
+          beta = SCI(std::min<int>(beta + delta,infinite_score));
+        } else{
+          break;
+        }
+
+        delta += delta / 3;
+      }
+
+      if (time.stop)
+        break;
+
+      td.pv.clear();
+      for (int i = 0; i < ss->pv_size; ++i)
+        td.pv.push_back(ss->pv[i]);
+
+      if (MainThread && uci::verbose)
+        SO << info(td,td.root_depth,score) << SE;
+
+      ++td.root_depth;
     }
-    ++td.root_depth;
   }
+
   if (MainThread){
     stop();
-    for (auto& t : threads) t.join();
+
+    for (auto& t : threads)
+      t.join();
+
     threads.clear();
-    if (time.use_node_limit || time.use_move_limit){
-      SO << info(td,td.root_depth,prev_score) << SE;
+
+    u16 best = td.pv.empty()?u16():td.pv[0];
+
+    if (selfplay_mode){
+      thread_local std::mt19937 rng(std::random_device{}());
+      std::uniform_int_distribution chance_dist(0,99);
+
+      move_list moves;
+      gen_moves(pos,moves);
+
+      std::vector<u16> legal_moves;
+      for (size_t i = 0; i < moves.size(); ++i){
+        if (u16 m = moves.move(i); pos.is_legal(m))
+          legal_moves.push_back(m);
+      }
+
+      if (legal_moves.size() > 1 &&
+        chance_dist(rng) < 10){
+        std::uniform_int_distribution<size_t>
+          move_dist(0,legal_moves.size() - 1);
+        best = legal_moves[move_dist(rng)];
+      }
     }
-    return td.pv[0];
+
+    last_score = score;
+    return best;
   }
+
   return u16();
 }
 
@@ -89,7 +171,8 @@ template <search_type St, bool SkipHashMove> int search::alpha_beta(
   constexpr bool pv_node = St != non_pv;
   if (const bool main_thread = td.id == 0; main_thread && depth >= 5) time.update(node_count());
   if (time.stop) return stop_score;
-  if (pos.is_draw()) return draw_score;
+  if (! root_node && pos.is_draw())
+    return draw_score;
   if (depth <= 0) return quiescence<pv_node?node_pv:non_pv>(pos,alpha,beta,td,ss);
   ++td.node_count;
   if (! root_node){
@@ -122,7 +205,7 @@ template <search_type St, bool SkipHashMove> int search::alpha_beta(
         (he.data_union.entry_data.nt == allnode && hash_score < ss->static_eval))){
       eval = hash_score;
     } else eval = ss->static_eval;
-  } else eval = ss->static_eval = eval::evaluate(pos);
+  } else eval = ss->static_eval = nnue::evaluate(pos);
   td.histories.killer[(ss + 1)->ply][0] =
     td.histories.killer[(ss + 1)->ply][1] = u16();
   if (! root_node && ! is_in_check){
@@ -238,6 +321,8 @@ template <search_type St, bool SkipHashMove> int search::alpha_beta(
       }
     }
     pos.apply_move(m);
+    i16 full_acc[2][nnue::l1_size];
+    nnue::refresh_accumulator(pos,full_acc);
     if (lmr){
       ext =
         SCI32(std::round(ext / SCDO(lmr_factor)));
@@ -262,7 +347,7 @@ template <search_type St, bool SkipHashMove> int search::alpha_beta(
       best_score = score;
       if (pv_node){
         ss->pv[0] = m;
-        std::memcpy(ss->pv + 1,(ss + 1)->pv,(ss + 1)->pv_size * sizeof(u16));
+        std::copy_n((ss + 1)->pv,(ss + 1)->pv_size,ss->pv + 1);
         ss->pv_size = (ss + 1)->pv_size + 1;
       }
       if (score > alpha){
@@ -297,7 +382,7 @@ template <search_type St> int search::quiescence(
   ++td.node_count;
   if (time.stop) return stop_score;
   if (pos.is_draw()) return draw_score;
-  if (ss->ply >= max_ply) return pos.is_in_check()?draw_score:eval::evaluate(pos);
+  if (ss->ply >= max_ply) return pos.is_in_check()?draw_score:nnue::evaluate(pos);
   const u64 key = pos.key();
   hash_entry he;
   const bool hash_hit = hash.probe(key,he);
@@ -309,7 +394,7 @@ template <search_type St> int search::quiescence(
   const bool is_in_check = pos.is_in_check();
   int best_score;
   if (is_in_check) best_score = ss->static_eval = -infinite_score;
-  else best_score = ss->static_eval = hash_hit?he.data_union.entry_data.eval:eval::evaluate(pos);
+  else best_score = ss->static_eval = hash_hit?he.data_union.entry_data.eval:nnue::evaluate(pos);
   if (hash_hit && (he.data_union.entry_data.nt == pvnode ||
     (he.data_union.entry_data.nt == cutnode && hash_score > best_score) ||
     (he.data_union.entry_data.nt == allnode && hash_score < best_score)))

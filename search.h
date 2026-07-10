@@ -41,14 +41,21 @@ struct search{
     i32 depth,
     int score) const;
 
+  bool selfplay_mode = false;
+  int last_score = 0;
+
+  [[nodiscard]] int get_last_score() const{
+    return last_score;
+  }
+
   [[nodiscard]] u64 node_count() const;
 
   chrono time;
   constexpr static i16 lmr_factor = 1000;
   hash_table hash;
-  inline static i32 forward_pruning_table[max_depth][max_moves];
-  inline static i32 log_reduction_table[max_depth][max_moves];
-  inline static i32 move_count_pruning_table[max_depth];
+  static i32 forward_pruning_table[max_depth][max_moves];
+  static i32 log_reduction_table[max_depth][max_moves];
+  static i32 move_count_pruning_table[max_depth];
 
   static void init();
 

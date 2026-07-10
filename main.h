@@ -2,10 +2,12 @@
 #include <chrono>
 #include <cstdint>
 #include <random>
+
 #ifdef _MSC_VER
 #pragma warning(disable : 4127)
 #else
 #endif
+
 #define	SC	static_cast
 #define	SCI	static_cast<int>
 #define	SCB	static_cast<bool>
@@ -19,10 +21,12 @@
 #define	SCSZ	static_cast<size_t>
 #define	SCTI	static_cast<thread_id>
 #define	SCTP	static_cast<time_point>
+
 #define SO std::cout
 #define SE std::endl
 #define NL "\n"
 #define FL NL << std::flush
+
 using i8 = int8_t;
 using i16 = int16_t;
 using i32 = int32_t;
@@ -34,9 +38,10 @@ using u64 = uint64_t;
 using hist_entry = i32;
 using node_type = u8;
 using thread_id = u32;
-using std::chrono::milliseconds;
 using std::log;
+using std::chrono::milliseconds;
 using time_point = milliseconds::rep;
+
 inline constexpr int max_depth = 256;
 inline constexpr int max_ply = 256;
 
@@ -133,8 +138,6 @@ constexpr i32 relative(
   return pc?pc ^ 8:pc;
 }
 
-inline std::string piece_to_char = " PNBRQK  pnbrqk";
-
 constexpr u8 make(
   const i8 file,
   const i8 rank){
@@ -199,10 +202,10 @@ inline u64 rand_u64(){
 }
 
 namespace zobrist{
-  inline u64 psq[16][n_sqs];
-  inline u64 side;
-  inline u64 castle[16];
-  inline u64 en_passant[n_files];
+  extern u64 psq[16][n_sqs];
+  extern u64 side;
+  extern u64 castle[16];
+  extern u64 en_passant[n_files];
 
   inline void init(){
     for (auto& i : psq){

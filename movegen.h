@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include "bitboard.h"
+
 constexpr int max_moves = 256;
 
 struct move_info{
@@ -107,7 +108,8 @@ template <bool Root = true> u64 perft(
 inline std::ostream& operator<<(
   std::ostream& os,
   const move_list& movelist){
-  for (int i = 0; i < SCI(movelist.size()); ++i) os << move::move_to_string(movelist.move(i)) << " ";
+  for (size_t i = 0; i < movelist.size(); ++i)
+    os << move::move_to_string(movelist.move(static_cast<int>(i))) << " ";
   return os;
 }
 

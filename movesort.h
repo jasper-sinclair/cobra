@@ -102,7 +102,7 @@ struct move_sort{
     hashmove, normal_init, normal
   };
 
-  board& position;
+  board& position; // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
   bool is_in_check;
   history& hist;
   int idx;
