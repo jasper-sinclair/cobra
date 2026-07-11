@@ -32,21 +32,6 @@ This removes the dependency on an external NNUE library while providing a cleane
 
 Cobra serves as a platform for exploring modern chess engine techniques while maintaining a clean, readable, and extensible C++ codebase.
 Cobra's strength & unique play results from the use of an original NNUE evaluation created & trained from millions of Kobra vs Kobra self-play games.
-Much of the data used is available here: https://github.com/jasper-sinclair/cobra-data
-
-NNUE features:
-https://github.com/jasper-sinclair/cobra/blob/main/docs/nnue-features.md
-
-NNUE training:
-https://github.com/jasper-sinclair/cobra/blob/main/docs/nnue-train.md
-
-NNUE creation:
-https://github.com/jasper-sinclair/cobra/blob/main/docs/nnue-creation.md
-
-KOBRA train:
-https://github.com/jasper-sinclair/cobra-train
-
-Kobra NNUE is powered by a highly optimized custom adaptation of https://github.com/dshawul/nnue-probe
 
 [license-badge]:https://img.shields.io/github/license/jasper-sinclair/cobra?style=for-the-badge&label=license&color=success
 [license-link]:https://github.com/jasper-sinclair/cobra/blob/main/LICENSE
