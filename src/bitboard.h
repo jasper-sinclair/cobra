@@ -43,7 +43,7 @@ struct bitboard{
     return data & SCU64(1) << sq;
   }
 
-  template <i32 D> [[nodiscard]] constexpr bitboard shift() const;
+  template <i32 d> [[nodiscard]] constexpr bitboard shift() const;
 
   constexpr friend bitboard operator&(
     const bitboard a,
@@ -156,17 +156,17 @@ constexpr bitboard black_qs_path(0xE00000000000000);
 constexpr bitboard black_ks_path(0x6000000000000000);
 constexpr bitboard diag_c2_h7(0x0080402010080400);
 
-template <i32 D> constexpr bitboard bitboard::shift() const{
+template <i32 d> constexpr bitboard bitboard::shift() const{
   const bitboard b(*this);
-  if constexpr (D == north) return b << north;
-  else if constexpr (D == south) return b >> north;
-  else if constexpr (D == 2 * north) return b << 2 * north;
-  else if constexpr (D == 2 * south) return b >> 2 * north;
+  if constexpr (d == north) return b << north;
+  else if constexpr (d == south) return b >> north;
+  else if constexpr (d == 2 * north) return b << 2 * north;
+  else if constexpr (d == 2 * south) return b >> 2 * north;
 
-  else if constexpr (D == northeast) return (b << northeast) - filea;
-  else if constexpr (D == northwest) return (b << northwest) - fileh;
-  else if constexpr (D == southeast) return (b >> northwest) - filea;
-  else if constexpr (D == southwest) return (b >> northeast) - fileh;
+  else if constexpr (d == northeast) return (b << northeast) - filea;
+  else if constexpr (d == northwest) return (b << northwest) - fileh;
+  else if constexpr (d == southeast) return (b >> northwest) - filea;
+  else if constexpr (d == southwest) return (b >> northeast) - fileh;
   else return {};
 }
 
@@ -188,10 +188,10 @@ namespace move{
     return SCU16(from | to << 6 | mt);
   }
 
-  template <i32 Pt> constexpr u16 make(
+  template <i32 pt> constexpr u16 make(
     const u8 from,
     const u8 to){
-    return from | to << 6 | promotion | (Pt - 2) << 12;
+    return from | to << 6 | promotion | (pt - 2) << 12;
   }
 
   constexpr u8 from(
@@ -339,18 +339,18 @@ struct board{
 
   std::vector<board_state> board_status{};
 
-  template <bool UpdateZobrist = true> void move_piece(
+  template <bool update_zobrist = true> void move_piece(
     u8 from,
     u8 to);
 
-  template <bool UpdateZobrist = true> void remove_piece(
+  template <bool update_zobrist = true> void remove_piece(
     u8 sq);
 
-  template <bool UpdateZobrist = true> void set_piece(
+  template <bool update_zobrist = true> void set_piece(
     i32 pc,
     u8 sq);
 
-  template <i32 Pt> bitboard atts_by(
+  template <i32 pt> bitboard atts_by(
     bool c);
 
   [[nodiscard]] u64 compute_full_zobrist() const;

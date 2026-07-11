@@ -62,11 +62,11 @@ namespace attack{
     return a_file_att[rmake(sq)][occ.data] << fmake(sq);
   }
 
-  template <i32 Pt>
+  template <i32 pt>
   bitboard atts(
     const u8 sq,
     const bitboard occupied){
-    switch (Pt){
+    switch (pt){
     case bishop:
       return diag_att(sq,occupied) |
         anti_diag_att(sq,occupied);
@@ -83,10 +83,10 @@ namespace attack{
     }
   }
 
-  template <bool C>
+  template <bool c>
   bitboard pawn_att_bb(
     const bitboard b){
-    return C == white
+    return c == white
       ?b.shift<7>() | b.shift<9>()
       :b.shift<-9>() | b.shift<-7>();
   }

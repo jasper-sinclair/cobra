@@ -63,15 +63,15 @@ inline void move_list::remove(
   --last;
 }
 
-template <bool C> void gen_pawn_moves(
+template <bool c> void gen_pawn_moves(
   board& pos,
   move_list& movelist);
 
-template <bool C, i32 Pt> void gen_piece_moves(
+template <bool c, i32 pt> void gen_piece_moves(
   board& pos,
   move_list& movelist);
 
-template <bool C> void gen_king_moves(
+template <bool c> void gen_king_moves(
   board& pos,
   move_list& movelist);
 
@@ -79,7 +79,7 @@ void gen_moves(
   board& pos,
   move_list& movelist);
 
-template <bool Root = true> u64 perft(
+template <bool root = true> u64 perft(
   board& pos,
   const int depth){
   u64 cnt, nodes = 0;
@@ -87,7 +87,7 @@ template <bool Root = true> u64 perft(
   move_list moves;
   gen_moves(pos,moves);
   for (size_t i = 0; i < moves.size(); ++i){
-    if (Root && depth <= 1){
+    if (root && depth <= 1){
       cnt = 1;
       ++nodes;
     } else{
@@ -98,7 +98,7 @@ template <bool Root = true> u64 perft(
       nodes += cnt;
       pos.undo_move();
     }
-    if (Root){
+    if (root){
       SO << move::move_to_string(moves.move(i)) << " " << cnt << SE;
     }
   }

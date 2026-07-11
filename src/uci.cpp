@@ -6,7 +6,6 @@
 #include <sstream>
 #include "eval.h"
 #include "movegen.h"
-#include "nnue.h"
 #include "selfplay.h"
 
 namespace uci{

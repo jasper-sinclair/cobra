@@ -1,7 +1,6 @@
 #include "selfplay.h"
 #include <atomic>
 #include <chrono>
-#include <cmath>
 #include <fstream>
 #include <iomanip>
 #include <mutex>
@@ -66,12 +65,6 @@ namespace uci{
       }
 
       return 0.5f;
-    }
-
-    float sigmoid_eval(
-      const int eval){
-      constexpr float inv_scale = 1.0f / 400.0f;
-      return 1.0f / (1.0f + std::exp(-static_cast<float>(eval) * inv_scale));
     }
 
     void selfplay_worker(
@@ -158,8 +151,7 @@ namespace uci{
 
           int pieces = piece_count(position);
 
-          int sample_rate = (pieces <= 6)?1:
-            (pieces <= 10)?2:4;
+          int sample_rate = pieces <= 6?1: pieces <= 10?2:4;
 
           [[maybe_unused]] std::uniform_int_distribution sample_dist(0,sample_rate);
 
@@ -307,7 +299,7 @@ namespace uci{
       const double percent =
         100.0 * done / games;
 
-      auto dt=
+      const auto dt=
         std::chrono::duration<double>(now - last_time).count();
 
       double instant_gps=0.0;

@@ -2,18 +2,18 @@
 #include <algorithm>
 #include "attack.h"
 
-template <bool C> void gen_pawn_moves(
+template <bool c> void gen_pawn_moves(
   board& pos,
   move_list& movelist){
   u8 from;
   u8 to;
-  constexpr i32 up_left = C == white?northwest:southwest;
-  constexpr i32 up_right = C == white?northeast:southeast;
-  constexpr i32 up = C == white?north:south;
-  constexpr bool them = ! C;
-  constexpr bool us = C;
-  constexpr bitboard relative_rank4_bb = C == white?rank4:rank5;
-  constexpr bitboard relative_rank8_bb = C == white?rank8:rank1;
+  constexpr i32 up_left = c == white?northwest:southwest;
+  constexpr i32 up_right = c == white?northeast:southeast;
+  constexpr i32 up = c == white?north:south;
+  constexpr bool them = ! c;
+  constexpr bool us = c;
+  constexpr bitboard relative_rank4_bb = c == white?rank4:rank5;
+  constexpr bitboard relative_rank8_bb = c == white?rank8:rank1;
   bitboard empty = ~pos.occupied();
   const bitboard our_pawns = pos.get_pieces(us,pawn);
   const bitboard single_pawn_push_targets = our_pawns.shift<up>() & empty;
@@ -89,40 +89,40 @@ template <bool C> void gen_pawn_moves(
   }
 }
 
-template <bool C, i32 Pt> void gen_piece_moves(
+template <bool c, i32 pt> void gen_piece_moves(
   board& pos,
   move_list& movelist){
-  bitboard friendly = pos.get_color(C);
-  bitboard get_pieces = pos.get_pieces(C,Pt);
+  bitboard friendly = pos.get_color(c);
+  bitboard get_pieces = pos.get_pieces(c,pt);
   while (get_pieces){
     u8 from = pop_lsb(get_pieces);
     bitboard atts =
-      (Pt == knight
+      (pt == knight
         ?attack::knight_att[from]
-        :attack::atts<Pt>(from,pos.occupied())) -
+        :attack::atts<pt>(from,pos.occupied())) -
       friendly;
     while (atts) movelist.add(move::make(from,pop_lsb(atts)));
   }
 }
 
-template <bool C> void gen_king_moves(
+template <bool c> void gen_king_moves(
   board& pos,
   move_list& movelist){
-  const u8 ksq = pos.ksq(C);
-  bitboard atts = attack::king_att[ksq] - pos.get_color(C);
+  const u8 ksq = pos.ksq(c);
+  bitboard atts = attack::king_att[ksq] - pos.get_color(c);
   while (atts) movelist.add(move::make(ksq,pop_lsb(atts)));
-  if (ksq == relative(C,e1)){
+  if (ksq == relative(c,e1)){
     const bitboard empty = ~pos.occupied();
     constexpr bitboard path1 =
-      C == white?white_qs_path:black_qs_path;
+      c == white?white_qs_path:black_qs_path;
     constexpr bitboard path2 =
-      C == white?white_ks_path:black_ks_path;
-    if (pos.can_castle(C == white?white_qs:black_qs) &&
+      c == white?white_ks_path:black_ks_path;
+    if (pos.can_castle(c == white?white_qs:black_qs) &&
       (empty & path1) == path1)
-      movelist.add(make(ksq,relative(C,c1),move::castle));
-    if (pos.can_castle(C == white?white_ks:black_ks) &&
+      movelist.add(make(ksq,relative(c,c1),move::castle));
+    if (pos.can_castle(c == white?white_ks:black_ks) &&
       (empty & path2) == path2)
-      movelist.add(make(ksq,relative(C,g1),move::castle));
+      movelist.add(make(ksq,relative(c,g1),move::castle));
   }
 }
 

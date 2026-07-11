@@ -62,11 +62,11 @@ struct search{
   std::vector<std::thread> threads;
   std::vector<thread_data*> thread_info;
 
-  template <bool MainThread = true> u16 best_move(
+  template <bool main_thread = true> u16 best_move(
     board& pos,
     thread_id id = 0);
 
-  template <search_type St, bool SkipHashMove = false> int alpha_beta(
+  template <search_type st, bool skip_hash_move = false> int alpha_beta(
     board& pos,
     int alpha,
     int beta,
@@ -74,7 +74,7 @@ struct search{
     thread_data& td,
     search_stack* ss);
 
-  template <search_type St> int quiescence(
+  template <search_type st> int quiescence(
     board& pos,
     int alpha,
     int beta,
