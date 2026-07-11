@@ -8,7 +8,7 @@ Cobra is a UCI-compatible chess engine written in modern C++.
   ![Downloads][downloads-badge]
   [![License][license-badge]][license-link]
   
-It is the brother of **Kobra**, continuing its search framework while introducing a completely new NNUE evaluation implementation.
+It is the brother of **Kobra** https://github.com/jasper-sinclair/kobra, continuing its search framework while introducing a completely new NNUE evaluation implementation.
 
 Unlike Kobra, which relied on a customized version of Daniel Shawul's `nnue-probe`, Cobra implements an minimal yet strong 768×128 NNUE architecture.
 
