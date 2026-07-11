@@ -1,8 +1,8 @@
 #include "nnue.h"
 #include <algorithm>
-#include <fstream>
 #include <iostream>
 #include "bitboard.h"
+#include "net.h"
 
 namespace nnue{
   namespace{
@@ -12,9 +12,7 @@ namespace nnue{
       i16 out_weights[2][l1_size];
       i16 out_bias;
     };
-    network net;
-    auto nnue_file = "network.bin";
-
+    const network* net;
     int feature_index(
       const int pc,
       const int sq,
@@ -28,16 +26,9 @@ namespace nnue{
     }
   }
 
-  bool init(){
-    std::ifstream file(nnue_file,std::ios::binary);
-    if (! file){
-      std::cout << "Failed to open NNUE file\n";
-      return false;
-    }
-
-    file.read(reinterpret_cast<char*>(&net),sizeof(network));
-
-    std::cout << "NNUE loaded successfully\n";
+  bool init() {
+    net=reinterpret_cast<const network*>(g_default_net);
+    std::cout << "Embedded NNUE loaded\n";
     return true;
   }
 
@@ -48,7 +39,7 @@ namespace nnue{
     for (int p = 0; p < 2; ++p){
       const int idx = feature_index(pc,sq,p);
       for (int i = 0; i < l1_size; ++i)
-        acc[p][i] = static_cast<i16>(acc[p][i] + net.in_weights[idx][i]);
+        acc[p][i] = static_cast<i16>(acc[p][i] + net->in_weights[idx][i]);
     }
   }
 
@@ -59,7 +50,7 @@ namespace nnue{
     for (int p = 0; p < 2; ++p){
       const int idx = feature_index(pc,sq,p);
       for (int i = 0; i < l1_size; ++i)
-        acc[p][i] = static_cast<i16>(acc[p][i] - net.in_weights[idx][i]);
+        acc[p][i] = static_cast<i16>(acc[p][i] - net->in_weights[idx][i]);
     }
   }
 
@@ -68,7 +59,7 @@ namespace nnue{
     i16 acc[2][l1_size]){
     for (int p = 0; p < 2; ++p)
       for (int i = 0; i < l1_size; ++i)
-        acc[p][i] = net.in_biases[i];
+        acc[p][i] = net->in_biases[i];
 
     for (u8 sq = 0; sq < 64; ++sq){
       const int pc = pos.piece_on(sq);
@@ -90,17 +81,17 @@ namespace nnue{
       for (int i=0; i < l1_size; ++i) {
         int x=acc[stm][i];
         x=std::clamp(x, 0, 255);
-        score+=static_cast<int64_t>(x) * x * net.out_weights[0][i];
+        score+=static_cast<int64_t>(x) * x * net->out_weights[0][i];
       }
 
       for (int i=0; i < l1_size; ++i) {
         int x=acc[nstm][i];
         x=std::clamp(x, 0, 255);
-        score+=static_cast<int64_t>(x) * x * net.out_weights[1][i];
+        score+=static_cast<int64_t>(x) * x * net->out_weights[1][i];
       }
 
       int64_t tmp=score / 255;
-      tmp+=net.out_bias;
+      tmp+=net->out_bias;
       tmp=tmp * 400LL;
       score=tmp / (255LL * 64LL);
 

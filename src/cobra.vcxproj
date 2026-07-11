@@ -133,6 +133,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="movegen.cpp" />
     <ClCompile Include="movesort.cpp" />
+    <ClCompile Include="net.cpp" />
     <ClCompile Include="nnue.cpp" />
     <ClCompile Include="search.cpp" />
     <ClCompile Include="chrono.cpp" />
@@ -148,6 +149,7 @@
     <ClInclude Include="main.h" />
     <ClInclude Include="movegen.h" />
     <ClInclude Include="movesort.h" />
+    <ClInclude Include="net.h" />
     <ClInclude Include="nnue.h" />
     <ClInclude Include="search.h" />
     <ClInclude Include="chrono.h" />
