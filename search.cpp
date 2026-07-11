@@ -10,11 +10,11 @@ i32 search::forward_pruning_table[max_depth][max_moves];
 i32 search::log_reduction_table[max_depth][max_moves];
 i32 search::move_count_pruning_table[max_depth];
 
-template <bool MainThread>
+template <bool main_thread>
 u16 search::best_move(
   board& pos,
   const thread_id id){
-  if (MainThread){
+  if (main_thread){
     for (const auto& td : thread_info){
       td->pv.clear();
       td->node_count = 0;
@@ -107,14 +107,14 @@ u16 search::best_move(
       for (int i = 0; i < ss->pv_size; ++i)
         td.pv.push_back(ss->pv[i]);
 
-      if (MainThread && uci::verbose)
+      if (main_thread && uci::verbose)
         SO << info(td,td.root_depth,score) << SE;
 
       ++td.root_depth;
     }
   }
 
-  if (MainThread){
+  if (main_thread){
     stop();
 
     for (auto& t : threads)
@@ -160,15 +160,15 @@ template u16 search::best_move<false>(
   board& pos,
   thread_id id);
 
-template <search_type St, bool SkipHashMove> int search::alpha_beta(
+template <search_type st, bool skip_hash_move> int search::alpha_beta(
   board& pos,
   int alpha,
   int beta,
   i32 depth,
   thread_data& td,
   search_stack* ss){
-  constexpr bool root_node = St == root;
-  constexpr bool pv_node = St != non_pv;
+  constexpr bool root_node = st == root;
+  constexpr bool pv_node = st != non_pv;
   if (const bool main_thread = td.id == 0; main_thread && depth >= 5) time.update(node_count());
   if (time.stop) return stop_score;
   if (! root_node && pos.is_draw())
@@ -187,7 +187,7 @@ template <search_type St, bool SkipHashMove> int search::alpha_beta(
   const bool hash_hit = hash.probe(key,he);
   const int hash_score =
     hash_table::score_from_hash(he.data_union.entry_data.score,ss->ply);
-  if (! pv_node && ! SkipHashMove && hash_hit && depth <= he.data_union.entry_data.depth){
+  if (! pv_node && ! skip_hash_move && hash_hit && depth <= he.data_union.entry_data.depth){
     if (he.data_union.entry_data.nt == pvnode ||
       (he.data_union.entry_data.nt == cutnode && hash_score >= beta) ||
       (he.data_union.entry_data.nt == allnode && hash_score <= alpha)){
@@ -212,7 +212,7 @@ template <search_type St, bool SkipHashMove> int search::alpha_beta(
     if (! pv_node && depth < 3 && eval >= beta + 171 * depth &&
       eval < min_mate_score)
       return eval;
-    if (! pv_node && ! SkipHashMove && pos.non_pawn_material(pos.side_to_move) &&
+    if (! pv_node && ! skip_hash_move && pos.non_pawn_material(pos.side_to_move) &&
       beta > -min_mate_score && eval >= ss->static_eval && eval >= beta &&
       ss->static_eval >= beta - 22 * depth + 400 && depth < 12){
       const i32 r = (13 + depth) / 5;
@@ -241,7 +241,7 @@ template <search_type St, bool SkipHashMove> int search::alpha_beta(
     if (! m) break;
     if (pv_node) (ss + 1)->pv_size = 0;
     ++move_count;
-    if (SkipHashMove && m == ss->hash_move) continue;
+    if (skip_hash_move && m == ss->hash_move) continue;
     const bool is_capture = pos.is_capture(m);
     const u8 from = move::from(m);
     const u8 to = move::to(m);
@@ -273,7 +273,7 @@ template <search_type St, bool SkipHashMove> int search::alpha_beta(
     int ext = 0;
     bool lmr = false;
     if (move_count == 1){
-      if (! root_node && ! SkipHashMove && depth >= 8 && m == hash_move &&
+      if (! root_node && ! skip_hash_move && depth >= 8 && m == hash_move &&
         (he.data_union.entry_data.nt == cutnode || he.data_union.entry_data.nt == pvnode) &&
         he.data_union.entry_data.depth + 3 >= depth && std::abs(eval) < min_mate_score){
         const int singular_beta =
@@ -357,9 +357,9 @@ template <search_type St, bool SkipHashMove> int search::alpha_beta(
       }
     }
   }
-  if (SkipHashMove && move_count == 1) return alpha;
+  if (skip_hash_move && move_count == 1) return alpha;
   if (! move_count) return is_in_check?-mate_score + ss->ply:draw_score;
-  if (! SkipHashMove){
+  if (! skip_hash_move){
     const node_type nt = best_score >= beta
       ?cutnode
       :pv_node && best_move
@@ -372,13 +372,13 @@ template <search_type St, bool SkipHashMove> int search::alpha_beta(
   return best_score;
 }
 
-template <search_type St> int search::quiescence(
+template <search_type st> int search::quiescence(
   board& pos,
   int alpha,
   const int beta,
   thread_data& td,
   search_stack* ss){
-  constexpr bool pv_node = St == node_pv;
+  constexpr bool pv_node = st == node_pv;
   ++td.node_count;
   if (time.stop) return stop_score;
   if (pos.is_draw()) return draw_score;
@@ -425,7 +425,7 @@ template <search_type St> int search::quiescence(
     ss->moved = pos.piece_on(move::from(m));
     ss->move = m;
     pos.apply_move(m);
-    const int score = -quiescence<St>(pos,-beta,-alpha,td,ss + 1);
+    const int score = -quiescence<st>(pos,-beta,-alpha,td,ss + 1);
     pos.undo_move();
     if (score > best_score){
       best_score = score;

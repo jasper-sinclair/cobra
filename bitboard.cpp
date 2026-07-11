@@ -133,30 +133,30 @@ std::string board::fen() const{
   return ss.str();
 }
 
-template <bool UpdateZobrist> void board::set_piece(
+template <bool update_zobrist> void board::set_piece(
   const i32 pc,
   const u8 sq){
   pos[sq] = pc;
   piece_bb[ptmake(pc)].set(sq);
   color_bb[make(pc)].set(sq);
   occupied_bb.set(sq);
-  if (UpdateZobrist) st->zobrist ^= zobrist::psq[pc][sq];
+  if (update_zobrist) st->zobrist ^= zobrist::psq[pc][sq];
 }
 
-template <bool UpdateZobrist> void board::remove_piece(
+template <bool update_zobrist> void board::remove_piece(
   const u8 sq){
-  if (UpdateZobrist) st->zobrist ^= zobrist::psq[piece_on(sq)][sq];
+  if (update_zobrist) st->zobrist ^= zobrist::psq[piece_on(sq)][sq];
   piece_bb[ptmake(piece_on(sq))].clear(sq);
   color_bb[make(piece_on(sq))].clear(sq);
   pos[sq] = no_piece;
   occupied_bb.clear(sq);
 }
 
-template <bool UpdateZobrist> void board::move_piece(
+template <bool update_zobrist> void board::move_piece(
   const u8 from,
   const u8 to){
-  set_piece<UpdateZobrist>(piece_on(from),to);
-  remove_piece<UpdateZobrist>(from);
+  set_piece<update_zobrist>(piece_on(from),to);
+  remove_piece<update_zobrist>(from);
 }
 
 u64 board::compute_full_zobrist() const{
@@ -650,28 +650,28 @@ bitboard board::attackers_to(
     attack::king_att[sq] & get_pieces(king);
 }
 
-template <i32 Pt> bitboard board::atts_by(
+template <i32 pt> bitboard board::atts_by(
   const bool c){
-  if constexpr (Pt == pawn)
+  if constexpr (pt == pawn)
     return c == white
       ?attack::pawn_att_bb<white>(get_pieces(c,pawn))
       :attack::pawn_att_bb<black>(get_pieces(c,pawn));
-  else if constexpr (Pt == knight){
+  else if constexpr (pt == knight){
     bitboard attackers = get_pieces(c,knight);
     bitboard threats{};
     while (attackers) threats |= attack::knight_att[pop_lsb(attackers)];
     return threats;
-  } else if constexpr (Pt == bishop){
+  } else if constexpr (pt == bishop){
     bitboard attackers = get_pieces(c,bishop);
     bitboard threats{};
     while (attackers) threats |= attack::atts<bishop>(pop_lsb(attackers),occupied());
     return threats;
-  } else if constexpr (Pt == rook){
+  } else if constexpr (pt == rook){
     bitboard attackers = get_pieces(c,rook);
     bitboard threats{};
     while (attackers) threats |= attack::atts<rook>(pop_lsb(attackers),occupied());
     return threats;
-  } else if constexpr (Pt == queen){
+  } else if constexpr (pt == queen){
     bitboard attackers = get_pieces(c,queen);
     bitboard threats{};
     while (attackers) threats |= attack::atts<queen>(pop_lsb(attackers),occupied());

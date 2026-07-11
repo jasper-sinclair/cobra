@@ -5,7 +5,7 @@
 
 struct search_stack;
 
-template <size_t Size, size_t... Sizes> struct hist : std::array<hist<Sizes...>, Size>{
+template <size_t size, size_t... sizes> struct hist : std::array<hist<sizes...>, size>{
   void fill(
     const hist_entry value){
     const auto e = reinterpret_cast<hist_entry*>(this);
@@ -20,7 +20,7 @@ template <size_t Size, size_t... Sizes> struct hist : std::array<hist<Sizes...>,
   }
 };
 
-template <size_t Size> struct hist<Size> : std::array<hist_entry, Size>{};
+template <size_t size> struct hist<size> : std::array<hist_entry, size>{};
 
 struct capture_hist : hist<n_pieces, n_sqs, n_piece_types>{
   static constexpr hist_entry heinc = 7;
