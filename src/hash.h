@@ -33,21 +33,16 @@ struct hash_table{
   bool probe(
     u64 key,
     hash_entry& entry);
-
   static int score_from_hash(
     int score,
     i32 ply);
-
   static int score_to_hash(
     int score,
     i32 ply);
-
   std::unique_ptr<hash_entry[]> entries;
   u64 mask = 0;
   u64 size = 0;
-
   void clear() const;
-
   void save(
     u64 key,
     int score,
@@ -55,7 +50,6 @@ struct hash_table{
     u16 move,
     i32 depth,
     node_type nt);
-
   void set_size(
     u64 mb);
 };

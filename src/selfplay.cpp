@@ -56,9 +56,9 @@ namespace uci{
       if (position.is_draw())
         return 0.5f;
 
-      if (! has_legal_moves(position)){
+      if (!has_legal_moves(position)){
         if (position.is_in_check()){
-          return position.side_to_move == white?0.0f:1.0f;
+          return position.side_to_move == white ? 0.0f : 1.0f;
         }
 
         return 0.5f;
@@ -80,7 +80,7 @@ namespace uci{
 
       thread_local std::ofstream out("training.txt",std::ios::app);
 
-      thread_local std::mt19937 rng(std::random_device{}());
+      thread_local std::mt19937 rng(std::random_device {}());
 
       for (int g = 0; g < games; ++g){
         engine.clear();
@@ -106,7 +106,7 @@ namespace uci{
 
           std::uniform_int_distribution<size_t> dist(0,legal.size() - 1);
           position.apply_move(legal[dist(rng)]);
-          if (! has_legal_moves(position))
+          if (!has_legal_moves(position))
             break;
         }
 
@@ -120,7 +120,7 @@ namespace uci{
           if (position.is_draw() && ply > 60)
             break;
 
-          if (! has_legal_moves(position))
+          if (!has_legal_moves(position))
             break;
 
           if (ply > 120)
@@ -144,14 +144,14 @@ namespace uci{
 
           eval = engine.get_last_score();
 
-          if (! best)
+          if (!best)
             break;
 
           ply++;
 
           int pieces = piece_count(position);
 
-          int sample_rate = pieces <= 6?1: pieces <= 10?2:4;
+          int sample_rate = pieces <= 6 ? 1 : pieces <= 10 ? 2 : 4;
 
           [[maybe_unused]] std::uniform_int_distribution sample_dist(0,sample_rate);
 
@@ -194,7 +194,7 @@ namespace uci{
             continue;
 
           float label =
-            p.white_to_move?training_result:1.0f - training_result;
+            p.white_to_move ? training_result : 1.0f - training_result;
 
           label = std::clamp(label,0.0f,1.0f);
 
@@ -260,7 +260,7 @@ namespace uci{
     for (int i = 0; i < threads; i++){
       int count =
         games_per_thread +
-        (i < remainder?1:0);
+        (i < remainder ? 1 : 0);
 
       workers.emplace_back(
         selfplay_worker,
@@ -275,9 +275,9 @@ namespace uci{
     const auto start =
       std::chrono::steady_clock::now();
 
-    double smoothed_games_per_sec=0.0;
-    int last_done=0;
-    auto last_time=start;
+    double smoothed_games_per_sec = 0.0;
+    int last_done = 0;
+    auto last_time = start;
 
     while (games_completed < games){
       std::this_thread::sleep_for(1s);
@@ -299,39 +299,39 @@ namespace uci{
       const double percent =
         100.0 * done / games;
 
-      const auto dt=
+      const auto dt =
         std::chrono::duration<double>(now - last_time).count();
 
-      double instant_gps=0.0;
+      double instant_gps = 0.0;
 
       if (dt > 0.0)
-        instant_gps=(done - last_done) / dt;
+        instant_gps = (done - last_done) / dt;
 
       if (smoothed_games_per_sec == 0.0)
-        smoothed_games_per_sec=instant_gps;
+        smoothed_games_per_sec = instant_gps;
       else
-        smoothed_games_per_sec=
-        0.85 * smoothed_games_per_sec +
-        0.15 * instant_gps;
+        smoothed_games_per_sec =
+          0.85 * smoothed_games_per_sec +
+          0.15 * instant_gps;
 
-      const double games_per_sec=smoothed_games_per_sec;
+      const double games_per_sec = smoothed_games_per_sec;
 
-      last_done=done;
-      last_time=now;
+      last_done = done;
+      last_time = now;
 
       const double pos_per_sec =
         static_cast<double>(positions) / seconds;
 
       const double plies_per_game =
-        done > 0?static_cast<double>(plies) / done:0.0;
+        done > 0 ? static_cast<double>(plies) / done : 0.0;
 
       const double remaining_games =
         games - done;
 
-      double eta_seconds=0.0;
+      double eta_seconds = 0.0;
 
       if (seconds > 5.0 && games_per_sec > 0.0)
-        eta_seconds=remaining_games / games_per_sec;
+        eta_seconds = remaining_games / games_per_sec;
 
       const int eta_min =
         static_cast<int>(eta_seconds / 60);
@@ -355,13 +355,13 @@ namespace uci{
       const int total = w + b + d;
 
       const double w_pct =
-        total?100.0 * w / total:0.0;
+        total ? 100.0 * w / total : 0.0;
 
       const double b_pct =
-        total?100.0 * b / total:0.0;
+        total ? 100.0 * b / total : 0.0;
 
       const double draw_pct =
-        total?100.0 * d / total:0.0;
+        total ? 100.0 * d / total : 0.0;
 
       std::ostringstream line;
 

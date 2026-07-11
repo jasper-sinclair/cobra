@@ -7,13 +7,13 @@ template <bool c> void gen_pawn_moves(
   move_list& movelist){
   u8 from;
   u8 to;
-  constexpr i32 up_left = c == white?northwest:southwest;
-  constexpr i32 up_right = c == white?northeast:southeast;
-  constexpr i32 up = c == white?north:south;
-  constexpr bool them = ! c;
+  constexpr i32 up_left = c == white ? northwest : southwest;
+  constexpr i32 up_right = c == white ? northeast : southeast;
+  constexpr i32 up = c == white ? north : south;
+  constexpr bool them = !c;
   constexpr bool us = c;
-  constexpr bitboard relative_rank4_bb = c == white?rank4:rank5;
-  constexpr bitboard relative_rank8_bb = c == white?rank8:rank1;
+  constexpr bitboard relative_rank4_bb = c == white ? rank4 : rank5;
+  constexpr bitboard relative_rank8_bb = c == white ? rank8 : rank1;
   bitboard empty = ~pos.occupied();
   const bitboard our_pawns = pos.get_pieces(us,pawn);
   const bitboard single_pawn_push_targets = our_pawns.shift<up>() & empty;
@@ -98,8 +98,8 @@ template <bool c, i32 pt> void gen_piece_moves(
     u8 from = pop_lsb(get_pieces);
     bitboard atts =
       (pt == knight
-        ?attack::knight_att[from]
-        :attack::atts<pt>(from,pos.occupied())) -
+        ? attack::knight_att[from]
+        : attack::atts<pt>(from,pos.occupied())) -
       friendly;
     while (atts) movelist.add(move::make(from,pop_lsb(atts)));
   }
@@ -114,13 +114,13 @@ template <bool c> void gen_king_moves(
   if (ksq == relative(c,e1)){
     const bitboard empty = ~pos.occupied();
     constexpr bitboard path1 =
-      c == white?white_qs_path:black_qs_path;
+      c == white ? white_qs_path : black_qs_path;
     constexpr bitboard path2 =
-      c == white?white_ks_path:black_ks_path;
-    if (pos.can_castle(c == white?white_qs:black_qs) &&
+      c == white ? white_ks_path : black_ks_path;
+    if (pos.can_castle(c == white ? white_qs : black_qs) &&
       (empty & path1) == path1)
       movelist.add(make(ksq,relative(c,c1),move::castle));
-    if (pos.can_castle(c == white?white_ks:black_ks) &&
+    if (pos.can_castle(c == white ? white_ks : black_ks) &&
       (empty & path2) == path2)
       movelist.add(make(ksq,relative(c,g1),move::castle));
   }
@@ -129,10 +129,10 @@ template <bool c> void gen_king_moves(
 void gen_moves(
   board& pos,
   move_list& movelist){
-  if (! pos.st->king_attacinfo.computed) pos.gen_king_attack_info(pos.st->king_attacinfo);
+  if (!pos.st->king_attacinfo.computed) pos.gen_king_attack_info(pos.st->king_attacinfo);
   movelist.last = movelist.data;
   if (pos.side_to_move == white){
-    if (! pos.st->king_attacinfo.double_check){
+    if (!pos.st->king_attacinfo.double_check){
       gen_pawn_moves<white>(pos,movelist);
       gen_piece_moves<white, knight>(pos,movelist);
       gen_piece_moves<white, bishop>(pos,movelist);
@@ -141,7 +141,7 @@ void gen_moves(
     }
     gen_king_moves<white>(pos,movelist);
   } else{
-    if (! pos.st->king_attacinfo.double_check){
+    if (!pos.st->king_attacinfo.double_check){
       gen_pawn_moves<black>(pos,movelist);
       gen_piece_moves<black, knight>(pos,movelist);
       gen_piece_moves<black, bishop>(pos,movelist);
@@ -152,6 +152,6 @@ void gen_moves(
   }
   movelist.last = std::ranges::remove_if(movelist,[&](
     const move_info& m){
-      return ! pos.is_legal(m.move);
+      return !pos.is_legal(m.move);
     }).begin();
 }

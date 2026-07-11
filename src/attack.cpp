@@ -5,7 +5,6 @@ namespace attack{
   int knight_dir[8] = {17,10,-6,-15,-17,-10,6,15};
   int bishop_dir[4] = {9,-7,-9,7};
   int rook_dir[4] = {8,1,-8,-1};
-
   bitboard a_file_att[8][64];
   bitboard anti_diag_by_sq[n_sqs];
   bitboard anti_diag[15];
@@ -85,8 +84,8 @@ namespace attack{
     for (u8 sq = a1; sq < n_sqs; ++sq){
       const i8 file = fmake(sq);
       const i8 rank = rmake(sq);
-      ray_att[north][sq] = sq < 64?bitboard(0x101010101010100ULL << sq):bitboard(0);
-      ray_att[northeast][sq] = sq < 64?bitboard(0x8040201008040200ULL << sq):bitboard(0);
+      ray_att[north][sq] = sq < 64 ? bitboard(0x101010101010100ULL << sq) : bitboard(0);
+      ray_att[northeast][sq] = sq < 64 ? bitboard(0x8040201008040200ULL << sq) : bitboard(0);
       ray_att[south][sq] = bitboard(0x80808080808080) >> (63 - sq);
       ray_att[east][sq] = bitboard(0xfe) << sq;
       if (rank < rank_8) ray_att[east][sq] -= ranks[rank + 1];

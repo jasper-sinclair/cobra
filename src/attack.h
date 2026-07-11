@@ -87,8 +87,8 @@ namespace attack{
   bitboard pawn_att_bb(
     const bitboard b){
     return c == white
-      ?b.shift<7>() | b.shift<9>()
-      :b.shift<-9>() | b.shift<-7>();
+      ? b.shift<7>() | b.shift<9>()
+      : b.shift<-9>() | b.shift<-7>();
   }
 
   void init();

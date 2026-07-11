@@ -2,7 +2,6 @@
 #include <array>
 #include "main.h"
 #include "movegen.h"
-
 struct search_stack;
 
 template <size_t size, size_t... sizes> struct hist : std::array<hist<sizes...>, size>{
@@ -25,12 +24,10 @@ template <size_t size> struct hist<size> : std::array<hist_entry, size>{};
 struct capture_hist : hist<n_pieces, n_sqs, n_piece_types>{
   static constexpr hist_entry heinc = 7;
   static constexpr hist_entry hedec = 8;
-
   void increase(
     const board& pos,
     u16 move,
     i32 depth);
-
   void decrease(
     const board& pos,
     u16 move,
@@ -40,12 +37,10 @@ struct capture_hist : hist<n_pieces, n_sqs, n_piece_types>{
 struct butterfly_hist : hist<n_colors, n_sqs, n_sqs>{
   static constexpr hist_entry heinc = 10;
   static constexpr hist_entry hedec = 5;
-
   void increase(
     const board& pos,
     u16 move,
     i32 depth);
-
   void decrease(
     const board& pos,
     u16 move,
@@ -59,13 +54,11 @@ struct continuation_hist : hist<n_pieces, n_sqs, n_pieces, n_sqs>{
   static constexpr hist_entry hedec1 = 2;
   static constexpr hist_entry hedec2 = 2;
   static constexpr hist_entry hedec4 = 2;
-
   void increase(
     const board& pos,
     const search_stack* stack,
     u16 move,
     i32 depth);
-
   void decrease(
     const board& pos,
     const search_stack* stack,
@@ -82,9 +75,7 @@ struct history{
   static constexpr hist_entry continuation_fill = -470;
   u16 counter[n_pieces][n_sqs];
   u16 killer[max_depth + 1][2];
-
   void clear();
-
   void update(
     const board& pos,
     const search_stack* stack,
@@ -110,11 +101,8 @@ struct move_sort{
   move_list moves;
   search_stack* ss;
   u16 hash_move;
-
   u16 next();
-
   void compute_scores();
-
   move_sort(
     board& pos,
     search_stack* stack,

@@ -4,7 +4,6 @@
 #include <thread>
 #include <unordered_map>
 #include "search.h"
-
 constexpr auto engine_name = "cobra";
 constexpr auto engine_version = "1.0";
 constexpr auto engine_author = "Jasper";
@@ -59,38 +58,25 @@ namespace uci{
   extern std::mutex search_mutex;
   extern std::unordered_map<std::string, uci_option> options;
   extern std::vector<std::string> option_order;
-
   void apply_option(
     const std::string& name);
-
   u16 to_move(
     const std::string& str,
     board& b);
-
   void get_bestmove();
-
   void info();
-
   void init();
-
   void loop();
-
   void newgame();
-
   void go(
     std::istringstream& ss);
-
   void perft(
     std::istringstream& ss);
-
   void bench(
     std::istringstream& ss);
-
   void position(
     std::istringstream& ss);
-
   void setoption(
     std::istringstream& ss);
-
   void stop();
 }

@@ -62,7 +62,7 @@ namespace uci{
           << " max " << opt.max;
       } else if (opt.type == option_type::check){
         SO << "check default "
-          << (opt.check_value?"true":"false");
+          << (opt.check_value ? "true" : "false");
       }
       SO << NL;
     }
@@ -184,7 +184,7 @@ namespace uci{
           int movetime = 0;
           int depth = 0;
           int nodes = 0;
-          int threads=static_cast<int>(std::thread::hardware_concurrency());
+          int threads = static_cast<int>(std::thread::hardware_concurrency());
 
           ss >> games;
 
@@ -306,8 +306,8 @@ namespace uci{
       std::chrono::duration<double>(end - begin).count();
 
     const double nps = seconds > 0.0
-      ?static_cast<double>(node_cnt) / seconds
-      :0.0;
+      ? static_cast<double>(node_cnt) / seconds
+      : 0.0;
 
     SO << "node " << node_cnt << NL;
     SO << "time " << seconds << NL;
@@ -396,8 +396,8 @@ namespace uci{
       std::chrono::duration<double>(global_end - global_begin).count();
 
     const double nps = seconds > 0.0
-      ?static_cast<double>(total_nodes) / seconds
-      :0.0;
+      ? static_cast<double>(total_nodes) / seconds
+      : 0.0;
 
     std::cout << "Bench Results\n";
     std::cout << "Positions " << num_pos << "\n";

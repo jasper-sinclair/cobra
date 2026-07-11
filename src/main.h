@@ -2,12 +2,10 @@
 #include <chrono>
 #include <cstdint>
 #include <random>
-
 #ifdef _MSC_VER
 #pragma warning(disable : 4127)
 #else
 #endif
-
 #define	SC	static_cast
 #define	SCI	static_cast<int>
 #define	SCB	static_cast<bool>
@@ -21,12 +19,10 @@
 #define	SCSZ	static_cast<size_t>
 #define	SCTI	static_cast<thread_id>
 #define	SCTP	static_cast<time_point>
-
 #define SO std::cout
 #define SE std::endl
 #define NL "\n"
 #define FL NL << std::flush
-
 using i8 = int8_t;
 using i16 = int16_t;
 using i32 = int32_t;
@@ -41,7 +37,6 @@ using thread_id = u32;
 using std::log;
 using std::chrono::milliseconds;
 using time_point = milliseconds::rep;
-
 inline constexpr int max_depth = 256;
 inline constexpr int max_ply = 256;
 
@@ -81,12 +76,14 @@ enum ranks : u8{
 };
 
 enum directions : i8{
-  north = 8, east = 1, south = -north, west = -east, northeast = north + east, northwest = north + west, southeast = south + east, southwest = south + west,
+  north = 8, east = 1, south = -north, west = -east, northeast = north + east, northwest = north + west, southeast = south + east,
+  southwest = south + west,
   n_dirs = 8
 };
 
 enum castle_rights : u8{
-  no_castle = 0, white_qs = 1, white_ks = 1 << 1, black_qs = 1 << 2, black_ks = 1 << 3, qs = white_qs | black_qs, ks = white_ks | black_ks, white_castle = white_ks | white_qs,
+  no_castle = 0, white_qs = 1, white_ks = 1 << 1, black_qs = 1 << 2, black_ks = 1 << 3, qs = white_qs | black_qs, ks = white_ks | black_ks,
+  white_castle = white_ks | white_qs,
   black_castle = black_ks | black_qs, any_castle = white_castle | black_castle,
 };
 
@@ -101,7 +98,7 @@ constexpr bool make(
 
 constexpr i32 pawn_push(
   const bool c){
-  return c?south:north;
+  return c ? south : north;
 }
 
 constexpr i8 fmake(
@@ -135,7 +132,7 @@ constexpr i32 pmake(
 
 constexpr i32 relative(
   const i32 pc){
-  return pc?pc ^ 8:pc;
+  return pc ? pc ^ 8 : pc;
 }
 
 constexpr u8 make(
@@ -157,7 +154,7 @@ constexpr void mirror(
 constexpr u8 relative(
   const bool c,
   const u8 sq){
-  return c?sq ^ a8:sq;
+  return c ? sq ^ a8 : sq;
 }
 
 inline std::string sq_to_string(

@@ -44,7 +44,7 @@ board::board(
     }
   }
   ss >> token;
-  side_to_move = token == "w"?white:black;
+  side_to_move = token == "w" ? white : black;
   ss >> token;
   for (const char c : token){
     switch (c){
@@ -60,7 +60,7 @@ board::board(
     }
   }
   ss >> token;
-  st->ep_sq = token == "-"?no_sq:make(token);
+  st->ep_sq = token == "-" ? no_sq : make(token);
   ss >> st->fifty_move_count;
   ss >> st->ply_count;
   st->ply_count = 2 * (st->ply_count - 1) + side_to_move;
@@ -89,7 +89,7 @@ board& board::operator=(
 std::ostream& operator<<(
   std::ostream& os,
   const board& pos){
-  const std::string sp = " ";
+  constexpr std::string sp = " ";
   for (i8 r = rank_8; r >= rank_1; --r){
     os << '\n';
     for (i8 f = file_a; f <= file_h; ++f){
@@ -119,7 +119,7 @@ std::string board::fen() const{
     if (empty_count) ss << empty_count;
     if (r != rank_1) ss << '/';
   }
-  ss << ' ' << (side_to_move == white?'w':'b');
+  ss << ' ' << (side_to_move == white ? 'w' : 'b');
   ss << ' ';
   if (can_castle(white_ks)) ss << 'K';
   if (can_castle(white_qs)) ss << 'Q';
@@ -127,7 +127,7 @@ std::string board::fen() const{
   if (can_castle(black_qs)) ss << 'q';
   if (cannot_castle()) ss << '-';
   ss << ' '
-    << (st->ep_sq == no_sq?"-":sq_to_string(st->ep_sq));
+    << (st->ep_sq == no_sq ? "-" : sq_to_string(st->ep_sq));
   ss << ' ' << st->fifty_move_count;
   ss << ' ' << 1 + (st->ply_count - side_to_move) / 2;
   return ss.str();
@@ -189,7 +189,7 @@ void board::apply_move(
   const i32 pt = ptmake(pc);
 
   const bool us = side_to_move;
-  const bool them = ! us;
+  const bool them = !us;
   const i32 push = pawn_push(us);
 
   board_state bs;
@@ -201,7 +201,7 @@ void board::apply_move(
   bs.zobrist = st->zobrist;
   bs.ep_sq = no_sq;
   bs.captured =
-    mt == move::en_passant?pmake(them,pawn):piece_on(to);
+    mt == move::en_passant ? pmake(them,pawn) : piece_on(to);
   bs.move = m;
   bs.king_attacinfo.computed = false;
 
@@ -220,11 +220,11 @@ void board::apply_move(
     if (bs.captured == pmake(them,rook)){
       if (to == relative(us,a8)){
         st->zobrist ^= zobrist::castle[bs.castles.data];
-        bs.castles.reset(us?white_qs:black_qs);
+        bs.castles.reset(us ? white_qs : black_qs);
         st->zobrist ^= zobrist::castle[bs.castles.data];
       } else if (to == relative(us,h8)){
         st->zobrist ^= zobrist::castle[bs.castles.data];
-        bs.castles.reset(us?white_ks:black_ks);
+        bs.castles.reset(us ? white_ks : black_ks);
         st->zobrist ^= zobrist::castle[bs.castles.data];
       }
     }
@@ -239,7 +239,7 @@ void board::apply_move(
     }
   } else if (pt == king){
     st->zobrist ^= zobrist::castle[bs.castles.data];
-    bs.castles.reset(us?black_castle:white_castle);
+    bs.castles.reset(us ? black_castle : white_castle);
     st->zobrist ^= zobrist::castle[bs.castles.data];
 
     if (mt == move::castle){
@@ -256,11 +256,11 @@ void board::apply_move(
   } else if (pt == rook){
     if (from == relative(us,a1)){
       st->zobrist ^= zobrist::castle[bs.castles.data];
-      bs.castles.reset(us?black_qs:white_qs);
+      bs.castles.reset(us ? black_qs : white_qs);
       st->zobrist ^= zobrist::castle[bs.castles.data];
     } else if (from == relative(us,h1)){
       st->zobrist ^= zobrist::castle[bs.castles.data];
-      bs.castles.reset(us?black_ks:white_ks);
+      bs.castles.reset(us ? black_ks : white_ks);
       st->zobrist ^= zobrist::castle[bs.castles.data];
     }
   }
@@ -274,7 +274,7 @@ void board::apply_move(
   }
 
   st->zobrist ^= zobrist::side;
-  side_to_move = ! side_to_move;
+  side_to_move = !side_to_move;
 
   nnue::sub_feature(bs.acc,original_pc,from);
 
@@ -328,7 +328,7 @@ void board::apply_move(
 }
 
 void board::undo_move(){
-  side_to_move = ! side_to_move;
+  side_to_move = !side_to_move;
   const u8 from = move::from(st->move);
   u8 to = move::to(st->move);
   const move::move_type mt = move::mt(st->move);
@@ -342,8 +342,8 @@ void board::undo_move(){
     set_piece<false>(pmake(us,pawn),from);
   } else if (mt == move::castle){
     const bool is_ks = to > from;
-    const u8 rto = relative(us,is_ks?f1:d1);
-    const u8 rfrom = relative(us,is_ks?h1:a1);
+    const u8 rto = relative(us,is_ks ? f1 : d1);
+    const u8 rfrom = relative(us,is_ks ? h1 : a1);
     move_piece<false>(rto,rfrom);
     move_piece<false>(to,from);
   } else move_piece<false>(to,from);
@@ -374,18 +374,18 @@ void board::apply_null_move(){
   board_status.push_back(bs);
   st = get_board_status();
 
-  side_to_move = ! side_to_move;
+  side_to_move = !side_to_move;
 }
 
 void board::undo_null_move(){
-  side_to_move = ! side_to_move;
+  side_to_move = !side_to_move;
   board_status.pop_back();
   st = get_board_status();
 }
 
 bool board::gives_check(
   const u16 m) const{
-  const bitboard their_king_bb = get_pieces(! side_to_move,king);
+  const bitboard their_king_bb = get_pieces(!side_to_move,king);
   const u8 ksq = lsb(their_king_bb);
   const u8 from = move::from(m);
   const u8 to = move::to(m);
@@ -429,31 +429,31 @@ bool board::gives_check(
   if (mt == move::castle){
     occ.clear(from);
     if (const u8 rsq = side_to_move == white
-      ?to > from
-      ?f1
-      :d1
-      :to > from
-      ?f8
-      :d8; attack::atts<rook>(rsq,occ) & their_king_bb)
+      ? to > from
+      ? f1
+      : d1
+      : to > from
+      ? f8
+      : d8; attack::atts<rook>(rsq,occ) & their_king_bb)
       return true;
   } else if (mt == move::en_passant){
     occ.clear(from);
     occ.clear(SCU8(to - pawn_push(side_to_move)));
     occ.set(to);
-    if (is_under_attack(! side_to_move,ksq)) return true;
+    if (is_under_attack(!side_to_move,ksq)) return true;
   } else{
     occ.clear(from);
     occ.set(to);
-    if (is_under_attack(! side_to_move,ksq)) return true;
+    if (is_under_attack(!side_to_move,ksq)) return true;
   }
   return false;
 }
 
 bool board::is_pseudo_legal(
   const u16 m) const{
-  if (! m) return false;
+  if (!m) return false;
   const bool us = side_to_move;
-  const bool them = ! side_to_move;
+  const bool them = !side_to_move;
   const u8 from = move::from(m);
   const u8 to = move::to(m);
   const move::move_type mt = move::mt(m);
@@ -465,38 +465,38 @@ bool board::is_pseudo_legal(
     pt != king && mt == move::castle)
     return false;
   if (pt == knight){
-    if (get_color(us).is_set(to) || ! attack::knight_att[from].is_set(to)) return false;
+    if (get_color(us).is_set(to) || !attack::knight_att[from].is_set(to)) return false;
   } else if (pt == rook){
-    if (get_color(us).is_set(to) || ! attack::rook_att[from].is_set(to) ||
+    if (get_color(us).is_set(to) || !attack::rook_att[from].is_set(to) ||
       attack::in_between_sqs[from][to] & occupied_bb)
       return false;
   } else if (pt == bishop){
-    if (get_color(us).is_set(to) || ! attack::bishop_att[from].is_set(to) ||
+    if (get_color(us).is_set(to) || !attack::bishop_att[from].is_set(to) ||
       attack::in_between_sqs[from][to] & occupied_bb)
       return false;
   } else if (pt == queen){
     if (get_color(us).is_set(to) ||
-      ! (attack::rook_att[from].is_set(to) ||
+      !(attack::rook_att[from].is_set(to) ||
         attack::bishop_att[from].is_set(to)) ||
       attack::in_between_sqs[from][to] & occupied_bb)
       return false;
   } else if (pt == pawn){
     const int push = pawn_push(us);
-    if (rmake(from) == (us == white?rank_7:rank_2) &&
+    if (rmake(from) == (us == white ? rank_7 : rank_2) &&
       mt != move::promotion)
       return false;
-    if (rmake(from) == (us == white?rank_2:rank_7) &&
+    if (rmake(from) == (us == white ? rank_2 : rank_7) &&
       to - from == 2 * push &&
-      ! occupied_bb.is_set(SCU8(from + push)) &&
-      ! occupied_bb.is_set(to))
+      !occupied_bb.is_set(SCU8(from + push)) &&
+      !occupied_bb.is_set(to))
       return true;
     if (to - from == push){
-      if (! occupied_bb.is_set(to)) return true;
+      if (!occupied_bb.is_set(to)) return true;
     } else if (mt == move::en_passant){
       if (st->ep_sq == to &&
         piece_on(SCU8(to - push)) ==
         pmake(them,pawn) &&
-        ! occupied_bb.is_set(to) && attack::pawn_att[us][from].is_set(to))
+        !occupied_bb.is_set(to) && attack::pawn_att[us][from].is_set(to))
         return true;
     } else if (distance(from,to) == 1 && get_color(them).is_set(to)){
       if (attack::pawn_att[us][from].is_set(to)) return true;
@@ -504,23 +504,23 @@ bool board::is_pseudo_legal(
     return false;
   } else if (pt == king){
     if (mt == move::castle){
-      const bool c = rmake(to) == rank_1?white:black;
+      const bool c = rmake(to) == rank_1 ? white : black;
       if (const bool ks = to > from; c != us ||
-        ! can_castle(c == white
-          ?ks
-          ?white_ks
-          :white_qs
-          :ks
-          ?black_ks
-          :black_qs) ||
+        !can_castle(c == white
+          ? ks
+          ? white_ks
+          : white_qs
+          : ks
+          ? black_ks
+          : black_qs) ||
         occupied_bb &
         (c == white
-          ?ks
-          ?white_ks_path
-          :white_qs_path
-          :ks
-          ?black_ks_path
-          :black_qs_path))
+          ? ks
+          ? white_ks_path
+          : white_qs_path
+          : ks
+          ? black_ks_path
+          : black_qs_path))
         return false;
     } else{
       if (get_color(us).is_set(to) || distance(from,to) != 1) return false;
@@ -532,7 +532,7 @@ bool board::is_pseudo_legal(
 void board::gen_king_attack_info(
   king_attack_info& k) const{
   k.computed = true;
-  const bool them = ! side_to_move;
+  const bool them = !side_to_move;
   const u8 ksq = this->ksq(side_to_move);
   const bitboard our_team = get_color(side_to_move);
   const bitboard their_team = get_color(them);
@@ -561,7 +561,7 @@ void board::gen_king_attack_info(
 
 bool board::is_legal(
   const u16 m){
-  if (! st->king_attacinfo.computed) gen_king_attack_info(st->king_attacinfo);
+  if (!st->king_attacinfo.computed) gen_king_attack_info(st->king_attacinfo);
   const u8 from = move::from(m);
   const u8 to = move::to(m);
   const move::move_type mt = move::mt(m);
@@ -591,10 +591,10 @@ bool board::is_legal(
       if (illegal) return false;
     }
   } else if (st->king_attacinfo.check() &&
-    (! st->king_attacinfo.atts.is_set(
+    (!st->king_attacinfo.atts.is_set(
         move::mt(m) == move::en_passant
-        ?SCU8(to - pawn_push(us))
-        :to) ||
+        ? SCU8(to - pawn_push(us))
+        : to) ||
       st->king_attacinfo.pinned.is_set(from)) ||
     st->king_attacinfo.double_check)
     return false;
@@ -624,7 +624,7 @@ bool board::is_legal(
 bool board::is_under_attack(
   const bool us,
   const u8 sq) const{
-  const bool them = ! us;
+  const bool them = !us;
   return attack::atts<rook>(sq,occupied_bb) &
     (get_pieces(them,rook) | get_pieces(them,queen)) ||
     attack::atts<bishop>(sq,occupied_bb) &
@@ -654,26 +654,26 @@ template <i32 pt> bitboard board::atts_by(
   const bool c){
   if constexpr (pt == pawn)
     return c == white
-      ?attack::pawn_att_bb<white>(get_pieces(c,pawn))
-      :attack::pawn_att_bb<black>(get_pieces(c,pawn));
+      ? attack::pawn_att_bb<white>(get_pieces(c,pawn))
+      : attack::pawn_att_bb<black>(get_pieces(c,pawn));
   else if constexpr (pt == knight){
     bitboard attackers = get_pieces(c,knight);
-    bitboard threats{};
+    bitboard threats {};
     while (attackers) threats |= attack::knight_att[pop_lsb(attackers)];
     return threats;
   } else if constexpr (pt == bishop){
     bitboard attackers = get_pieces(c,bishop);
-    bitboard threats{};
+    bitboard threats {};
     while (attackers) threats |= attack::atts<bishop>(pop_lsb(attackers),occupied());
     return threats;
   } else if constexpr (pt == rook){
     bitboard attackers = get_pieces(c,rook);
-    bitboard threats{};
+    bitboard threats {};
     while (attackers) threats |= attack::atts<rook>(pop_lsb(attackers),occupied());
     return threats;
   } else if constexpr (pt == queen){
     bitboard attackers = get_pieces(c,queen);
-    bitboard threats{};
+    bitboard threats {};
     while (attackers) threats |= attack::atts<queen>(pop_lsb(attackers),occupied());
     return threats;
   } else return {};
@@ -707,7 +707,7 @@ int board::see(
   gain[0] = eval::piece_values[to_pc];
   for (;;){
     ++d;
-    attacker = ! attacker;
+    attacker = !attacker;
     gain[d] = eval::piece_values[from_pc] - gain[d - 1];
     if (std::max(-gain[d - 1],gain[d]) < 0) break;
     attacking ^= from_set;
@@ -717,7 +717,7 @@ int board::see(
       (attack::atts<bishop>(to,occ) & (get_pieces(bishop) | get_pieces(queen)) |
         attack::atts<rook>(to,occ) & (get_pieces(rook) | get_pieces(queen)));
     from_set = least_valuable_piece(attacking,attacker,from_pc);
-    if (! from_set) break;
+    if (!from_set) break;
   }
   while (--d) gain[d - 1] = -std::max(-gain[d - 1],gain[d]);
   return gain[0];
@@ -725,15 +725,11 @@ int board::see(
 
 template bitboard board::atts_by<pawn>(
   bool c);
-
 template bitboard board::atts_by<knight>(
   bool c);
-
 template bitboard board::atts_by<bishop>(
   bool c);
-
 template bitboard board::atts_by<rook>(
   bool c);
-
 template bitboard board::atts_by<queen>(
   bool c);

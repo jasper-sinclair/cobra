@@ -9,10 +9,8 @@
 #pragma warning(disable : 4324) //'board_state': structure was padded due to alignment specifier
 #else
 #endif
-
 struct bitboard{
   u64 data;
-
   bitboard() = default;
 
   constexpr bitboard(
@@ -48,31 +46,31 @@ struct bitboard{
   constexpr friend bitboard operator&(
     const bitboard a,
     const bitboard b){
-    return bitboard{a.data & b.data};
+    return bitboard {a.data & b.data};
   }
 
   constexpr friend bitboard operator|(
     const bitboard a,
     const bitboard b){
-    return bitboard{a.data | b.data};
+    return bitboard {a.data | b.data};
   }
 
   constexpr friend bitboard operator^(
     const bitboard a,
     const bitboard b){
-    return bitboard{a.data ^ b.data};
+    return bitboard {a.data ^ b.data};
   }
 
   constexpr friend bitboard operator-(
     const bitboard a,
     const bitboard b){
-    return bitboard{a.data & ~b.data};
+    return bitboard {a.data & ~b.data};
   }
 
   constexpr friend bitboard operator*(
     const bitboard a,
     const bitboard b){
-    return bitboard{a.data * b.data};
+    return bitboard {a.data * b.data};
   }
 
   constexpr void operator&=(
@@ -96,7 +94,7 @@ struct bitboard{
   }
 
   constexpr bitboard operator~() const{
-    return bitboard{~data};
+    return bitboard {~data};
   }
 
   constexpr explicit operator bool() const{
@@ -106,13 +104,13 @@ struct bitboard{
   constexpr friend bitboard operator<<(
     const bitboard b,
     const u8 shift){
-    return bitboard{b.data << shift};
+    return bitboard {b.data << shift};
   }
 
   constexpr friend bitboard operator>>(
     const bitboard b,
     const u8 shift){
-    return bitboard{b.data >> shift};
+    return bitboard {b.data >> shift};
   }
 
   constexpr bool operator==(
@@ -126,7 +124,7 @@ struct bitboard{
     for (i8 r = rank_8; r >= rank_1; --r){
       for (i8 f = file_a; f <= file_h; ++f){
         const u8 sq = make(f,r);
-        os << (b.is_set(sq)?'X':'.') << ' ';
+        os << (b.is_set(sq) ? 'X' : '.') << ' ';
       }
       os << '\n';
     }
@@ -263,8 +261,8 @@ struct castle{
 };
 
 struct king_attack_info{
-  bitboard pinned{};
-  bitboard atts{};
+  bitboard pinned {};
+  bitboard atts {};
   bool double_check = false;
   bool computed = false;
 
@@ -274,12 +272,12 @@ struct king_attack_info{
 };
 
 struct board_state{
-  castle castles{};
+  castle castles {};
   int fifty_move_count = 0;
   int ply_count = 0;
   int repetitions = 0;
   u64 zobrist = 0;
-  king_attack_info king_attacinfo{};
+  king_attack_info king_attacinfo {};
   u16 move = 0;
   i32 captured = 0;
   u8 ep_sq = 0;
@@ -288,138 +286,90 @@ struct board_state{
 
 struct board{
   ~board() = default;
-
-  bitboard color_bb[n_colors]{};
-
+  bitboard color_bb[n_colors] {};
   bitboard least_valuable_piece(
     bitboard attacking,
     bool attacker,
     i32& pc) const;
-
-  bitboard occupied_bb{};
-  bitboard piece_bb[n_piece_types]{};
-
+  bitboard occupied_bb {};
+  bitboard piece_bb[n_piece_types] {};
   board_state* bs(
     int idx);
-
   board_state* get_board_status();
-
   board_state* st = nullptr;
-
   board() = default;
-
   board(
     board&& other) noexcept = default;
-
   board(
     const board& other);
-
   board& operator=(
     board&& other) noexcept = default;
-
   board& operator=(
     const board& other);
-
   bool is_legal(
     u16 m);
-
   bool side_to_move = white;
-
   explicit board(
     const std::string& fen);
-
   friend std::ostream& operator<<(
     std::ostream& os,
     const board& pos);
-
-  i32 pos[n_sqs]{};
-
+  i32 pos[n_sqs] {};
   static bool is_promotion(
     u16 m);
-
-  std::vector<board_state> board_status{};
-
+  std::vector<board_state> board_status {};
   template <bool update_zobrist = true> void move_piece(
     u8 from,
     u8 to);
-
   template <bool update_zobrist = true> void remove_piece(
     u8 sq);
-
   template <bool update_zobrist = true> void set_piece(
     i32 pc,
     u8 sq);
-
   template <i32 pt> bitboard atts_by(
     bool c);
-
   [[nodiscard]] u64 compute_full_zobrist() const;
-
   void apply_move(
     u16 m);
-
   void apply_null_move();
-
   void gen_king_attack_info(
     king_attack_info& k) const;
-
   void undo_move();
-
   void undo_null_move();
-
   [[nodiscard]] bitboard attackers_to(
     u8 sq,
     bitboard occupied) const;
-
   [[nodiscard]] bitboard get_color(
     bool c) const;
-
   [[nodiscard]] bitboard get_pieces(
     bool c,
     i32 pt) const;
-
   [[nodiscard]] bitboard get_pieces(
     i32 pt) const;
-
   [[nodiscard]] bitboard non_pawn_material(
     bool c) const;
-
   [[nodiscard]] bitboard occupied() const;
-
   [[nodiscard]] bool can_castle(
     int cr) const;
-
   [[nodiscard]] bool cannot_castle() const;
-
   [[nodiscard]] bool gives_check(
     u16 m) const;
-
   [[nodiscard]] bool is_capture(
     u16 m) const;
-
   [[nodiscard]] bool is_insufficient_material() const;
-
   [[nodiscard]] bool is_draw() const;
-
   [[nodiscard]] bool is_in_check() const;
-
   [[nodiscard]] bool is_pseudo_legal(
     u16 m) const;
-
   [[nodiscard]] bool is_under_attack(
     bool us,
     u8 sq) const;
-
   [[nodiscard]] i32 piece_on(
     u8 sq) const;
-
   [[nodiscard]] int see(
     u16 m) const;
-
   [[nodiscard]] std::string fen() const;
-
   [[nodiscard]] u64 key() const;
-
   [[nodiscard]] u8 ksq(
     bool c) const;
 };
@@ -516,7 +466,7 @@ inline void mirror(
 
 inline bitboard mirrored(
   const bitboard b){
-  return bitboard{_byteswap_uint64(b.data)};
+  return bitboard {_byteswap_uint64(b.data)};
 }
 #else
 inline void mirror(
@@ -583,15 +533,11 @@ inline bool board::is_insufficient_material() const{
 
 extern template bitboard board::atts_by<pawn>(
   bool c);
-
 extern template bitboard board::atts_by<knight>(
   bool c);
-
 extern template bitboard board::atts_by<bishop>(
   bool c);
-
 extern template bitboard board::atts_by<rook>(
   bool c);
-
 extern template bitboard board::atts_by<queen>(
   bool c);

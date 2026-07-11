@@ -56,18 +56,18 @@ int hash_table::score_to_hash(
   const int score,
   const i32 ply){
   return score >= min_mate_score
-    ?score + ply
-    :score <= -min_mate_score
-    ?score - ply
-    :score;
+    ? score + ply
+    : score <= -min_mate_score
+    ? score - ply
+    : score;
 }
 
 int hash_table::score_from_hash(
   const int score,
   const i32 ply){
   return score >= min_mate_score
-    ?score - ply
-    :score <= -min_mate_score
-    ?score + ply
-    :score;
+    ? score - ply
+    : score <= -min_mate_score
+    ? score + ply
+    : score;
 }

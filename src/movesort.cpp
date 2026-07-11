@@ -13,7 +13,7 @@ move_sort::move_sort(
   const bool in_check) : position(pos),
   is_in_check(in_check),
   hist(hist),
-  idx{},
+  idx {},
   stage(hashmove),
   ss(stack),
   hash_move(move){}
@@ -47,7 +47,7 @@ u16 move_sort::next(){
 
 void move_sort::compute_scores(){
   const bool us = position.side_to_move;
-  const bool them = ! us;
+  const bool them = !us;
   const bitboard threatened_by_pawn = position.atts_by<pawn>(them);
   const bitboard threatened_by_minor = threatened_by_pawn |
     position.atts_by<knight>(them) |
@@ -64,13 +64,13 @@ void move_sort::compute_scores(){
     int s = 0;
     if (position.is_capture(m)){
       const int see = position.see(m);
-      s += see >= 0?1000000:-1000000;
+      s += see >= 0 ? 1000000 : -1000000;
       const i32 moved = position.piece_on(move::from(m));
       const u8 to =
         move::mt(m) == move::en_passant
-        ?move::to(m) -
+        ? move::to(m) -
         SCU8(pawn_push(position.side_to_move))
-        :move::to(m);
+        : move::to(m);
       const i32 captured = ptmake(position.piece_on(to));
       s += 89 * eval::piece_values[position.piece_on(move::to(m))] +
         hist.capture[moved][to][captured];
@@ -96,9 +96,9 @@ void move_sort::compute_scores(){
           if (threatened_pieces.is_set(from)){
             const i32 pt = ptmake(position.piece_on(from));
             const bool is_safe =
-              ((pt == knight || pt == bishop) && ! threatened_by_pawn.is_set(to)) ||
-              (pt == rook && ! threatened_by_minor.is_set(to)) ||
-              (pt == queen && ! threatened_by_rook.is_set(to));
+              ((pt == knight || pt == bishop) && !threatened_by_pawn.is_set(to)) ||
+              (pt == rook && !threatened_by_minor.is_set(to)) ||
+              (pt == queen && !threatened_by_rook.is_set(to));
             if (is_safe){
               s += 561;
             }
@@ -133,9 +133,9 @@ void capture_hist::increase(
   const i32 moved = pos.piece_on(move::from(move));
   const u8 to =
     move::mt(move) == move::en_passant
-    ?move::to(move) -
+    ? move::to(move) -
     SCU8(pawn_push(pos.side_to_move))
-    :move::to(move);
+    : move::to(move);
   const i32 captured = ptmake(pos.piece_on(to));
   auto& e = data()[moved][to][captured];
   e += heinc * p(depth) * (max - e) / max;
@@ -148,9 +148,9 @@ void capture_hist::decrease(
   const i32 moved = pos.piece_on(move::from(move));
   const u8 to =
     move::mt(move) == move::en_passant
-    ?move::to(move) -
+    ? move::to(move) -
     SCU8(pawn_push(pos.side_to_move))
-    :move::to(move);
+    : move::to(move);
   const i32 captured = ptmake(pos.piece_on(to));
   auto& e = data()[moved][to][captured];
   e -= hedec * p(depth) * (max + e) / max;

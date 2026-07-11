@@ -3,7 +3,6 @@
 #include <iostream>
 #include <string>
 #include "bitboard.h"
-
 constexpr int max_moves = 256;
 
 struct move_info{
@@ -52,8 +51,7 @@ struct move_list{
 
   void remove(
     size_t idx);
-
-  move_list() : data{}, last(data){}
+  move_list() : data {}, last(data){}
 };
 
 inline void move_list::remove(
@@ -66,15 +64,12 @@ inline void move_list::remove(
 template <bool c> void gen_pawn_moves(
   board& pos,
   move_list& movelist);
-
 template <bool c, i32 pt> void gen_piece_moves(
   board& pos,
   move_list& movelist);
-
 template <bool c> void gen_king_moves(
   board& pos,
   move_list& movelist);
-
 void gen_moves(
   board& pos,
   move_list& movelist);
@@ -94,7 +89,7 @@ template <bool root = true> u64 perft(
       pos.apply_move(moves.move(i));
       move_list m;
       gen_moves(pos,m);
-      cnt = leaf?m.size():perft<false>(pos,depth - 1);
+      cnt = leaf ? m.size() : perft<false>(pos,depth - 1);
       nodes += cnt;
       pos.undo_move();
     }
