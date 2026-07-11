@@ -4,7 +4,7 @@ This folder contains scripts and tools for training a **minimal NNUE chess evalu
 
 The design focuses on **simplicity, speed, and debuggability** rather than maximum strength.
 
-This architecture is well suited for experimentation and typically reaches **~2300–2500 Elo** when trained on a sufficiently large dataset.
+This architecture is well suited for experimentation and typically reaches **~2500–3000 Elo** when trained on a sufficiently large dataset.
 
 ---
 
