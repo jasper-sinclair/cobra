@@ -1,4 +1,5 @@
 # Cobra ♟️
+![alt tag](https://raw.githubusercontent.com/jasper-sinclair/kobra/main/docs/kobra.png)
 
 Cobra is a UCI-compatible chess engine written in modern C++.
 
