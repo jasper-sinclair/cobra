@@ -1,71 +1,12 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "C:\\DEV\\COBRA (3100-121)\\cobra\\",
-  "Documents": [
-    {
-      "AbsoluteMoniker": "D:0:0:{FE11B533-C7E4-47A0-AAE2-8C19C0758B2A}|cobra.vcxproj|C:\\DEV\\COBRA (3100-121)\\cobra\\bitboard.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{FE11B533-C7E4-47A0-AAE2-8C19C0758B2A}|cobra.vcxproj|solutionrelative:bitboard.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{FE11B533-C7E4-47A0-AAE2-8C19C0758B2A}|cobra.vcxproj|C:\\DEV\\COBRA (3100-121)\\cobra\\selfplay.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{FE11B533-C7E4-47A0-AAE2-8C19C0758B2A}|cobra.vcxproj|solutionrelative:selfplay.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{FE11B533-C7E4-47A0-AAE2-8C19C0758B2A}|cobra.vcxproj|C:\\DEV\\COBRA (3100-121)\\cobra\\bitboard.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{FE11B533-C7E4-47A0-AAE2-8C19C0758B2A}|cobra.vcxproj|solutionrelative:bitboard.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    }
-  ],
+  "Documents": [],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
       "VerticalTabListWidth": 256,
-      "DocumentGroups": [
-        {
-          "DockedWidth": 200,
-          "SelectedChildIndex": 1,
-          "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "selfplay.cpp",
-              "DocumentMoniker": "C:\\DEV\\COBRA (3100-121)\\cobra\\selfplay.cpp",
-              "RelativeDocumentMoniker": "selfplay.cpp",
-              "ToolTip": "C:\\DEV\\COBRA (3100-121)\\cobra\\selfplay.cpp",
-              "RelativeToolTip": "selfplay.cpp",
-              "ViewState": "AgIAABQAAAAAAAAAAAAlwBkAAAAZAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2026-07-10T22:29:50.39Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "bitboard.h",
-              "DocumentMoniker": "C:\\DEV\\COBRA (3100-121)\\cobra\\bitboard.h",
-              "RelativeDocumentMoniker": "bitboard.h",
-              "ToolTip": "C:\\DEV\\COBRA (3100-121)\\cobra\\bitboard.h",
-              "RelativeToolTip": "bitboard.h",
-              "ViewState": "AgIAAAsAAAAAAAAAAAAlwBEAAAAMAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2026-07-10T22:29:39.419Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "bitboard.cpp",
-              "DocumentMoniker": "C:\\DEV\\COBRA (3100-121)\\cobra\\bitboard.cpp",
-              "RelativeDocumentMoniker": "bitboard.cpp",
-              "ToolTip": "C:\\DEV\\COBRA (3100-121)\\cobra\\bitboard.cpp",
-              "RelativeToolTip": "bitboard.cpp",
-              "ViewState": "AgIAAFUAAAAAAAAAAAAlwFsAAAAYAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2026-07-10T22:29:29.77Z",
-              "EditorCaption": ""
-            }
-          ]
-        }
-      ]
+      "DocumentGroups": []
     }
   ]
 }
