@@ -26,4 +26,4 @@ The goal of Cobra is to explore modern chess engine techniques while maintaining
 
 ## License
 
-See the repository for licensing information.
+GPL-3.0
